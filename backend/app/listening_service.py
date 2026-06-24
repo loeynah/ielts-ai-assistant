@@ -1,12 +1,15 @@
-"""听力切片诊断 — PDF/HTML 上下文 + DeepSeek-V3 结构化 JSON"""
+"""听力切片诊断 — 严厉判分 + 动态题号结构化 JSON"""
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
 from app.diagnosis_items import ensure_diagnosis_items
+from app.diagnosis_normalize import normalize_diagnosis_result
+from app.grading_rules import objective_is_correct
 from app.lesson_text import extract_lesson_text
 from app.llm_helper import llm_json_or_mock
+from app.prompt_manager import listening_diagnosis_system, user_payload
 
 LESSON_REGISTRY = {
     "103": {
@@ -91,16 +94,17 @@ def _mock_item(
         "is_correct": is_correct,
         "correct_answer": correct_ans,
         "error_analysis": (
-            "答案正确，注意同义替换与拼写稳定性。"
+            "答案正确。注意同义替换与拼写稳定性，勿因语速错过转折后的最终信息。"
             if is_correct
-            else f"你在「{user_ans}」处落入了前半句干扰，正确答案为「{correct_ans}」。"
+            else f"【严厉诊断】你在第 {display_num} 题填「{user_ans}」，落入干扰项；"
+            f"正确答案为「{correct_ans}」。极可能是未跟读 but/however 后的信息修正。"
         ),
         "listening_tip": (
-            "保持当前精听节奏，重点跟读答案句。"
+            "保持 1.0x 精听，跟读答案句并标注同义替换。"
             if is_correct
-            else "建议 1.0x 精听转折词 but / actually 前后 2 句，并用 1.25x 跟读答案句。"
+            else "1.0x 精听本题答案句前后 2 句，用 1.25x 跟读，重点听转折词。"
         ),
-        "knowledge_point": "时间信息「先诱后改」+ 同义替换定位",
+        "knowledge_point": "时间/数字「先诱后改」+ 同义替换定位",
     }
 
 
@@ -115,13 +119,22 @@ def _build_mock_diagnosis(
     if not merged:
         merged = dict(wrong_answers or {})
 
-    items = ensure_diagnosis_items(
-        [],
+    items = normalize_diagnosis_result(
+        {"items": {}},
         merged,
         question_meta,
         mode="listening",
-        mock_item_fn=_mock_item,
-    ) if merged else [_mock_item("q1", "10:00", "10:30", False, "1")]
+    )
+    if not items and merged:
+        items = ensure_diagnosis_items(
+            [],
+            merged,
+            question_meta,
+            mode="listening",
+            mock_item_fn=_mock_item,
+        )
+    if not items:
+        items = [_mock_item("q1", "10:00", "10:30", False, "1")]
 
     return {
         "lesson_id": lesson_id,
@@ -141,30 +154,28 @@ async def diagnose_listening(
     if not merged:
         merged = dict(wrong_answers or {})
 
-    answer_payload = {
-        qid: {"user_ans": _normalize_answer(ans)[0], "correct_ans": _normalize_answer(ans)[1]}
-        for qid, ans in merged.items()
-    }
-    if not answer_payload:
-        answer_payload = {"q1": {"user_ans": "10:00", "correct_ans": "10:30"}}
+    answer_payload = {}
+    for qid, ans in merged.items():
+        user, correct = _normalize_answer(ans)
+        answer_payload[qid] = {
+            "user_ans": user,
+            "correct_ans": correct,
+            "objective_status": "正确" if objective_is_correct(user, correct) else "错误",
+        }
+
+    q_range = ", ".join(
+        str(m.get("num", m.get("id"))) for m in (question_meta or [])
+    ) or "见作答列表"
 
     messages = [
-        {
-            "role": "system",
-            "content": (
-                "你是雅思听力教研专家。根据原文与学生全部作答，为每一道题输出诊断 JSON："
-                '{"items":[{"question_id","label","is_correct","correct_answer",'
-                '"display_num":"1","label":"1","is_correct","correct_answer",'
-                '"error_analysis","listening_tip","knowledge_point"}]}'
-                "。必须为每道题都生成一条 items；label/display_num 必须为真实题号数字，禁止用题型名。用中文写分析。"
-            ),
-        },
+        {"role": "system", "content": listening_diagnosis_system(q_range)},
         {
             "role": "user",
-            "content": (
-                f"Lesson: {lesson_id}\n\n原文节选：\n{context[:4000]}\n\n"
-                f"学生全部作答（共 {len(answer_payload)} 题）：\n"
-                f"{json.dumps(answer_payload, ensure_ascii=False)}"
+            "content": user_payload(
+                lesson_id=lesson_id,
+                question_meta=question_meta or [],
+                context_excerpt=context[:4000],
+                answers=answer_payload,
             ),
         },
     ]
@@ -175,15 +186,18 @@ async def diagnose_listening(
     result = await llm_json_or_mock(messages, mock_fn)
     result.setdefault("lesson_id", lesson_id)
     result.setdefault("context_preview", context[:300])
-    if "items" not in result:
-        return mock_fn()
-    result["items"] = ensure_diagnosis_items(
-        result["items"],
-        merged,
-        question_meta,
-        mode="listening",
-        mock_item_fn=_mock_item,
-    )
+
+    if merged:
+        result["items"] = normalize_diagnosis_result(result, merged, question_meta, mode="listening")
+        result["items"] = ensure_diagnosis_items(
+            result["items"],
+            merged,
+            question_meta,
+            mode="listening",
+            mock_item_fn=_mock_item,
+        )
+    else:
+        result["items"] = mock_fn()["items"]
     return result
 
 

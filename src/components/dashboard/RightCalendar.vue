@@ -16,7 +16,7 @@ let tickId = null
 
 onMounted(async () => {
   await userStore.refresh()
-  syncViewToExam()
+  syncViewToToday()
   tickId = setInterval(() => {
     today.value = new Date()
   }, 60_000)
@@ -26,14 +26,17 @@ onUnmounted(() => {
   if (tickId) clearInterval(tickId)
 })
 
-const examDateStr = computed(() => userStore.profile?.exam_date || '2026-06-25')
+const examDateStr = computed(() => userStore.profile?.exam_date || '')
+const hasExamDate = computed(() => Boolean(examDateStr.value))
 
 const examDateObj = computed(() => {
+  if (!hasExamDate.value) return null
   const d = new Date(examDateStr.value)
-  return Number.isNaN(d.getTime()) ? new Date('2026-06-25') : d
+  return Number.isNaN(d.getTime()) ? null : d
 })
 
 const countdownDays = computed(() => {
+  if (!examDateObj.value) return null
   const t = new Date(today.value)
   t.setHours(0, 0, 0, 0)
   const target = new Date(examDateObj.value)
@@ -60,16 +63,26 @@ const calendarDays = computed(() => {
 })
 
 const examDateLabel = computed(() => {
+  if (!examDateObj.value) return '尚未设置考试日期'
   const d = examDateObj.value
   return `${d.toLocaleString('zh-CN', { month: 'long' })}${d.getDate()} 日`
 })
 
 const weekLabels = ['日', '一', '二', '三', '四', '五', '六']
 
+function syncViewToToday() {
+  const t = today.value
+  viewYear.value = t.getFullYear()
+  viewMonth.value = t.getMonth()
+}
+
 function syncViewToExam() {
-  const d = examDateObj.value
-  viewYear.value = d.getFullYear()
-  viewMonth.value = d.getMonth()
+  if (!examDateObj.value) {
+    syncViewToToday()
+    return
+  }
+  viewYear.value = examDateObj.value.getFullYear()
+  viewMonth.value = examDateObj.value.getMonth()
 }
 
 function prevMonth() {
@@ -99,7 +112,7 @@ function isoForDay(day) {
 }
 
 function isExamDay(day) {
-  return isoForDay(day) === examDateStr.value.slice(0, 10)
+  return hasExamDate.value && isoForDay(day) === examDateStr.value.slice(0, 10)
 }
 
 function isToday(day) {
@@ -149,9 +162,13 @@ watch(examDateStr, () => syncViewToExam())
 
 <template>
   <SoftCard :padding="'p-6'">
-    <p class="mb-5 text-center text-base font-bold tracking-tight text-slate-800">
+    <p v-if="hasExamDate" class="mb-5 text-center text-base font-bold tracking-tight text-slate-800">
       距离 IELTS 考试还有：
       <span class="text-xl text-amber-600">🔥 {{ countdownDays }} 天</span>
+    </p>
+    <p v-else class="mb-5 text-center text-sm leading-relaxed text-slate-500">
+      尚未设置考试日期<br />
+      <span class="text-xs text-slate-400">与 AI 助手对话，或点击日历日期手动设置</span>
     </p>
 
     <div class="mb-1 flex items-center justify-between gap-2">
@@ -201,8 +218,8 @@ watch(examDateStr, () => syncViewToExam())
       </span>
     </div>
     <p class="mt-3 text-center text-[11px] text-slate-400">
-      <Star class="mr-0.5 inline h-3 w-3 fill-amber-400 text-amber-400" />
-      {{ examDateLabel }}考试日 · 点击日期可修改
+      <Star v-if="hasExamDate" class="mr-0.5 inline h-3 w-3 fill-amber-400 text-amber-400" />
+      {{ hasExamDate ? `${examDateLabel}考试日 · 点击日期可修改` : `${examDateLabel} · 点击日期可设置` }}
     </p>
 
     <Teleport to="body">

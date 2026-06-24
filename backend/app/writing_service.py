@@ -1,17 +1,17 @@
-"""写作四维度阅卷 — DeepSeek-V3 结构化输出"""
+"""写作四维度阅卷 — 字数硬性惩罚 + 严厉官方 JSON"""
 from __future__ import annotations
 
-import json
-
+from app.grading_rules import apply_writing_penalties, count_words
 from app.llm_helper import llm_json_or_mock
+from app.prompt_manager import user_payload, writing_grade_system
 
 
 def _build_mock_grade(task_id: str, task_type: str, essay_text: str) -> dict:
-    words = len([w for w in essay_text.strip().split() if w])
+    words = count_words(essay_text)
     min_words = 150 if task_type == "task1" else 250
-    base = 6.5 if words >= min_words else 6.0 if words >= min_words * 0.7 else 5.5
+    base = 6.5 if words >= min_words else 5.5 if words >= min_words * 0.7 else 4.5
 
-    return {
+    result = {
         "task_id": task_id,
         "task_type": task_type,
         "overall_score": base,
@@ -25,17 +25,15 @@ def _build_mock_grade(task_id: str, task_type: str, essay_text: str) -> dict:
             {
                 "original": "Technology help us learn",
                 "corrected": "Technology helps us learn",
-                "reason": "主谓一致错误",
+                "reason": "主谓一致错误 — 典型中式英语硬伤",
             },
         ],
-        "strengths": ["论点方向清晰", "段落结构基本完整"],
-        "weaknesses": ["论证深度不足", "衔接词多样性有限", "语法句式偏单一"],
+        "strengths": ["论点方向基本清晰"],
+        "weaknesses": ["论证深度不足", "衔接词单一", "若字数不足则 TR 必须低分"],
         "polished_essay": _sample_polished(task_type),
-        "general_advice": (
-            "论证结构清晰，但语法多样性（GRA）仍有提升空间，"
-            "建议多使用定语从句、分词结构和对比连接词增强逻辑衔接。"
-        ),
+        "general_advice": "论证结构尚可，但语法多样性与词汇精准度需加强，严禁回避字数惩罚。",
     }
+    return _sanitize_writing(result, task_type, essay_text)
 
 
 def _sample_polished(task_type: str) -> str:
@@ -51,28 +49,37 @@ def _sample_polished(task_type: str) -> str:
     )
 
 
+def _sanitize_writing(result: dict, task_type: str, essay_text: str) -> dict:
+    sub = result.get("sub_scores") or {}
+    overall = float(result.get("overall_score", 6.0))
+    sub, overall, extra = apply_writing_penalties(task_type, essay_text, sub, overall)
+
+    weaknesses = list(result.get("weaknesses") or [])
+    weaknesses.extend(extra)
+
+    general = result.get("general_advice") or ""
+    if extra:
+        general = extra[0] + (" " + general if general else "")
+
+    result["sub_scores"] = sub
+    result["overall_score"] = overall
+    result["weaknesses"] = weaknesses[:8]
+    result["general_advice"] = general
+    return result
+
+
 async def grade_writing(task_id: str, task_type: str, essay_text: str, prompt: str) -> dict:
+    wc = count_words(essay_text)
     messages = [
-        {
-            "role": "system",
-            "content": (
-                "你是雅思写作考官。按 TR/TA、CC、LR、GRA 四维度评分，输出 JSON："
-                '{"overall_score":6.5,"sub_scores":{"TR_TA","CC","LR","GRA"},'
-                '"grammar_highlights":[{"original","corrected","reason"}],'
-                '"strengths":[],"weaknesses":[],"polished_essay":"","general_advice":""}'
-                "。分数 0-9，保留一位小数。分析与建议用中文。"
-            ),
-        },
+        {"role": "system", "content": writing_grade_system()},
         {
             "role": "user",
-            "content": json.dumps(
-                {
-                    "task_id": task_id,
-                    "task_type": task_type,
-                    "prompt": prompt,
-                    "essay_text": essay_text[:6000],
-                },
-                ensure_ascii=False,
+            "content": user_payload(
+                task_id=task_id,
+                task_type=task_type,
+                word_count=wc,
+                prompt=prompt,
+                essay_text=essay_text[:6000],
             ),
         },
     ]
@@ -85,4 +92,4 @@ async def grade_writing(task_id: str, task_type: str, essay_text: str, prompt: s
     result.setdefault("task_type", task_type)
     if "overall_score" not in result:
         return mock_fn()
-    return result
+    return _sanitize_writing(result, task_type, essay_text)

@@ -3,8 +3,15 @@ dist
 dist-ssr
 .env
 backend/.env
+backend/data/
 .DS_Store
 Thumbs.db
 *.log
 .vscode/*
 !.vscode/extensions.json
+
+__pycache__/
+*.pyc
+
+__pycache__/
+*.pyc

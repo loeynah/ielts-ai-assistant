@@ -19,9 +19,14 @@ async def llm_json_or_mock(
     source_key: str = "source",
     llm_source: str = "deepseek",
     mock_source: str = "backend-mock",
+    temperature: float = 0.2,
 ) -> T:
     try:
-        data = await chat_json(messages)
+        from app.deepseek_client import chat_completion
+        import json as _json
+
+        raw = await chat_completion(messages, temperature=temperature, json_mode=True)
+        data = _json.loads(raw)
         if isinstance(data, dict) and source_key:
             data[source_key] = llm_source
         return data  # type: ignore[return-value]

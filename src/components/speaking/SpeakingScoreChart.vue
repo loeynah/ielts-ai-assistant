@@ -6,6 +6,7 @@ import { LineChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import SoftCard from '@/components/ui/SoftCard.vue'
+import { subScoreFromHistory } from '@/utils/speakingScores'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
@@ -58,7 +59,7 @@ const option = computed(() => {
         name: '流利度 FC',
         type: 'line',
         smooth: true,
-        data: sorted.map((h) => h.sub_scores?.FC ?? 0),
+        data: sorted.map((h) => subScoreFromHistory(h, 'FC')),
         lineStyle: { color: '#7ba7e8', width: 1.5 },
         itemStyle: { color: '#7ba7e8' },
         showSymbol: false,
@@ -67,7 +68,7 @@ const option = computed(() => {
         name: '词汇 LR',
         type: 'line',
         smooth: true,
-        data: sorted.map((h) => h.sub_scores?.LR ?? 0),
+        data: sorted.map((h) => subScoreFromHistory(h, 'LR')),
         lineStyle: { color: '#34d399', width: 1.5 },
         itemStyle: { color: '#34d399' },
         showSymbol: false,
@@ -76,7 +77,7 @@ const option = computed(() => {
         name: '语法 GRA',
         type: 'line',
         smooth: true,
-        data: sorted.map((h) => h.sub_scores?.GRA ?? 0),
+        data: sorted.map((h) => subScoreFromHistory(h, 'GRA')),
         lineStyle: { color: '#fbbf24', width: 1.5 },
         itemStyle: { color: '#fbbf24' },
         showSymbol: false,

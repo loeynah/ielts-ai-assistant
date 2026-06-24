@@ -9,6 +9,12 @@ export function formatIeltsBand(score) {
   return Number.isInteger(band) ? String(band) : band.toFixed(1)
 }
 
+/** 未设定（null / undefined / 负数）时显示 — */
+export function formatOptionalBand(score) {
+  if (score == null || score < 0) return '—'
+  return formatIeltsBand(score)
+}
+
 export function estimatedListeningBand(correct, total) {
   if (!total) return 6
   const ratio = correct / total

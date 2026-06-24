@@ -133,10 +133,6 @@ async function submitEssay() {
       prompt: task.prompt,
     })
     gradingState.value = 'graded'
-    userStore.recordGrade('writing', report.value.overall_score, {
-      title: '写作 AI 深度批改报告已送达',
-      meta: `Overall ${report.value.overall_score}`,
-    })
     await userStore.refresh()
   } catch {
     gradingState.value = 'idle'
@@ -162,7 +158,7 @@ onUnmounted(clearTimer)
     <header class="pt-1">
       <p class="text-sm font-medium text-[var(--color-accent)]">Writing</p>
       <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">写作机考工作台</h1>
-      <p class="mt-2 text-slate-500">官方双栏排版 · Task 1 图表加载 · AI 四维度深度批改</p>
+      <p class="mt-2 text-slate-500">真题组合 · 全场景机考模拟 · AI 四维深度批改评估</p>
     </header>
 
     <WritingTaskSelector

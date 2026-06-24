@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { fetchUserProfile, patchUserProfile } from '@/api/user'
 import { useAuthStore } from './auth'
+import { useTasksStore } from './tasks'
 import { roundIeltsBand } from '@/utils/ieltsScore'
 
 export const useUserStore = defineStore('user', () => {
@@ -28,6 +29,12 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  /** 登录后并发拉取画像、通知、任务清单 */
+  async function initializeAfterLogin() {
+    const tasksStore = useTasksStore()
+    await Promise.all([refresh(), tasksStore.loadFromServer()])
+  }
+
   function applyLocal(profileData) {
     profile.value = profileData
   }
@@ -35,15 +42,16 @@ export const useUserStore = defineStore('user', () => {
   async function updateExamDate(examDate) {
     const auth = useAuthStore()
     const base = profile.value || auth.user
-    if (!base || !examDate) return base
+    if (!base || examDate == null) return base
 
+    const payload = { exam_date: examDate === '' ? '' : examDate }
     try {
-      const data = await patchUserProfile({ exam_date: examDate })
+      const data = await patchUserProfile(payload)
       profile.value = data
       auth.setUser(data)
       return data
     } catch {
-      const next = { ...base, exam_date: examDate }
+      const next = { ...base, exam_date: examDate === '' ? null : examDate }
       profile.value = next
       auth.setUser(next)
       return next
@@ -74,7 +82,7 @@ export const useUserStore = defineStore('user', () => {
     if (target_score != null) await updateTargetScore(target_score)
   }
 
-  /** 批改完成后更新四科分与收件箱（后端不可用时本地联动） */
+  /** 后端不可用时的离线兜底（正常流程由服务端 push_inbox） */
   function recordGrade(module, score, { title, meta, icon }) {
     const auth = useAuthStore()
     const base = profile.value || auth.user
@@ -107,19 +115,14 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function clearExamDate() {
-    const auth = useAuthStore()
-    const base = profile.value || auth.user
-    if (!base) return null
-    const t = new Date()
-    const fallback = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 21)
-    const iso = fallback.toISOString().slice(0, 10)
-    return updateExamDate(iso)
+    return updateExamDate('')
   }
 
   return {
     profile,
     loading,
     refresh,
+    initializeAfterLogin,
     applyLocal,
     recordGrade,
     updateExamDate,

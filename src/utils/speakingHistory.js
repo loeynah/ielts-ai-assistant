@@ -1,21 +1,25 @@
-const STORAGE_KEY = 'ielts_speaking_history'
+import { fetchModuleHistory } from '@/api/history'
 
-export function loadSpeakingHistory() {
+function toChartRecord(item) {
+  return {
+    id: item.id,
+    timestamp: item.timestamp,
+    exam_id: item.exam_id,
+    exam_title: item.exam_title,
+    mode: item.mode,
+    overall_score: item.overall_score,
+    sub_scores: item.sub_scores || {},
+    rounds: item.rounds,
+    audio_count: item.audio_count,
+  }
+}
+
+/** 从后端拉取口语练习历史（走势图数据源） */
+export async function loadSpeakingHistory() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    const list = await fetchModuleHistory('speaking')
+    return (list || []).map(toChartRecord)
   } catch {
     return []
   }
 }
-
-export function saveSpeakingRecord(record) {
-  const list = loadSpeakingHistory()
-  list.unshift({
-    id: `sp-${Date.now()}`,
-    timestamp: new Date().toISOString(),
-    ...record,
-  })
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 30)))
-  return list
-}
-

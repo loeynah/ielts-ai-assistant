@@ -5,21 +5,33 @@ IELTS AI Prep Companion — FastAPI 全栈入口
 """
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app.auth_service import login as auth_login
+from app.auth_service import register as auth_register
 from app.chat_service import build_plan_reply
+from app.config import llm_config_status
+from app.history_store import list_practice_records, save_practice_record
 from app.listening_service import diagnose_listening, list_lessons
 from app.reading_service import assistant_reply, diagnose_reading
-from app.speaking_service import grade_speaking_exam, grade_speaking_practice
-from app.user_store import get_user_by_token, push_inbox, update_profile, update_skill_score
-from app.writing_service import grade_writing
-from app.config import llm_config_status
 from app.score_utils import estimated_listening_band, format_ielts_band, round_ielts_band
+from app.speaking_service import grade_speaking_exam, grade_speaking_practice
+from app.task_store import get_tasks, replace_tasks
+from app.user_store import bootstrap_storage, get_user_by_token, push_inbox, update_profile, update_skill_score
+from app.writing_service import grade_writing
 
-app = FastAPI(title="IELTS AI Prep Companion API", version="0.2.0")
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    bootstrap_storage()
+    yield
+
+
+app = FastAPI(title="IELTS AI Prep Companion API", version="0.3.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,6 +60,11 @@ def require_user(token: str | None = Depends(get_token)) -> dict:
 
 
 class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class RegisterRequest(BaseModel):
     username: str
     password: str
 
@@ -116,11 +133,35 @@ class SpeakingPracticeRequest(BaseModel):
     question: str
     transcript: str
     duration: float = 0
+    exam_id: str = "practice"
+    exam_title: str = "口语自定义训练"
+    rounds: int = 1
+
+
+class TaskItem(BaseModel):
+    id: int | None = None
+    category: str = "other"
+    content: str
+    done: bool = False
+    pinned: bool = False
+    source: str = "system"
+
+
+class TasksReplaceRequest(BaseModel):
+    tasks: list[TaskItem] = Field(default_factory=list)
 
 
 @app.get("/api/health/llm")
 def get_llm_health():
     return llm_config_status()
+
+
+@app.post("/api/auth/register")
+def post_register(body: RegisterRequest):
+    try:
+        return auth_register(body.username, body.password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.post("/api/auth/login")
@@ -138,12 +179,34 @@ def get_profile(user: dict = Depends(require_user)):
 
 @app.patch("/api/user/profile")
 def patch_profile(body: ProfilePatchRequest, user: dict = Depends(require_user)):
-    updated = update_profile(
-        user["username"],
-        exam_date=body.exam_date,
-        target_score=body.target_score,
-    )
+    try:
+        updated = update_profile(
+            user["username"],
+            exam_date=body.exam_date,
+            target_score=body.target_score,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return updated
+
+
+@app.get("/api/history/{module}")
+def get_module_history(module: str, user: dict = Depends(require_user)):
+    allowed = {"listening", "reading", "speaking", "writing"}
+    if module not in allowed:
+        raise HTTPException(status_code=404, detail="未知模块")
+    return list_practice_records(user["username"], module)
+
+
+@app.get("/api/tasks")
+def get_user_tasks(user: dict = Depends(require_user)):
+    return get_tasks(user["username"])
+
+
+@app.put("/api/tasks")
+def put_user_tasks(body: TasksReplaceRequest, user: dict = Depends(require_user)):
+    tasks = [t.model_dump() for t in body.tasks]
+    return replace_tasks(user["username"], tasks)
 
 
 @app.post("/api/chat")
@@ -175,6 +238,16 @@ async def post_listening_diagnose(body: ListeningDiagnoseRequest, user: dict = D
         meta=f"预估分 {format_ielts_band(score)} · {wrong_count} 题需复盘",
     )
     result["updated_score"] = score
+    save_practice_record(
+        user["username"],
+        module="listening",
+        record_type="diagnose",
+        ref_id=body.lesson_id,
+        title=f"听力 Lesson {body.lesson_id}",
+        overall_score=score,
+        payload=result,
+        meta={"lesson_id": body.lesson_id, "title": f"听力 Lesson {body.lesson_id}"},
+    )
     return result
 
 
@@ -200,6 +273,16 @@ async def post_reading_diagnose(body: ReadingDiagnoseRequest, user: dict = Depen
         meta=f"预估分 {format_ielts_band(score)}",
     )
     result["updated_score"] = score
+    save_practice_record(
+        user["username"],
+        module="reading",
+        record_type="diagnose",
+        ref_id=body.exam_id,
+        title=f"阅读 {body.exam_id}",
+        overall_score=score,
+        payload=result,
+        meta={"exam_id": body.exam_id, "title": f"阅读 {body.exam_id}"},
+    )
     return result
 
 
@@ -226,14 +309,52 @@ async def post_speaking_exam(body: SpeakingExamRequest, user: dict = Depends(req
         title="口语模拟考试 AI 批改报告已送达",
         meta=f"Overall {result['overall_score']}",
     )
+    audio_count = len(body.part1) + (1 if body.part2 else 0) + len(body.part3)
+    save_practice_record(
+        user["username"],
+        module="speaking",
+        record_type="exam",
+        ref_id=body.exam_id,
+        title=f"口语模考 {body.exam_id}",
+        overall_score=result.get("overall_score"),
+        payload=result,
+        meta={
+            "exam_id": body.exam_id,
+            "exam_title": f"口语模考 {body.exam_id}",
+            "mode": "exam",
+            "audio_count": audio_count,
+        },
+    )
     return result
 
 
 @app.post("/api/speaking/grade-practice")
 async def post_speaking_practice(body: SpeakingPracticeRequest, user: dict = Depends(require_user)):
     result = await grade_speaking_practice(body.question, body.transcript, body.duration)
-    if result.get("score", 0) > 0:
-        update_skill_score(user["username"], "speaking", result["score"])
+    score = result.get("overall_score") or result.get("score") or 0
+    if score > 0:
+        update_skill_score(user["username"], "speaking", score)
+        push_inbox(
+            user["username"],
+            module="speaking",
+            title="口语自定义训练单题批改已完成",
+            meta=f"评分 {format_ielts_band(score)}",
+        )
+    save_practice_record(
+        user["username"],
+        module="speaking",
+        record_type="practice",
+        ref_id=body.exam_id,
+        title=body.exam_title,
+        overall_score=score if score > 0 else None,
+        payload=result,
+        meta={
+            "exam_id": body.exam_id,
+            "exam_title": body.exam_title,
+            "mode": "practice",
+            "rounds": body.rounds,
+        },
+    )
     return result
 
 
@@ -246,5 +367,15 @@ async def post_writing_grade(body: WritingGradeRequest, user: dict = Depends(req
         module="writing",
         title="写作 AI 深度批改报告已送达",
         meta=f"Overall {result['overall_score']}",
+    )
+    save_practice_record(
+        user["username"],
+        module="writing",
+        record_type="grade",
+        ref_id=body.task_id,
+        title=f"写作 {body.task_id}",
+        overall_score=result.get("overall_score"),
+        payload=result,
+        meta={"task_id": body.task_id, "task_type": body.task_type},
     )
     return result

@@ -1,42 +1,43 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { mockDailyPlan } from '@/config/resources'
+import { fetchTasks, replaceTasks } from '@/api/tasks'
 
-const STORAGE_KEY = 'ielts_daily_tasks'
 let idSeq = 100
 
-function loadTasks() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
-function persistTasks(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-}
-
-function seedTasks() {
-  return Object.entries(mockDailyPlan.tasks).map(([key, content]) => ({
-    id: ++idSeq,
-    category: key,
-    content,
-    done: false,
-    pinned: false,
-    source: 'system',
-  }))
-}
-
 export const useTasksStore = defineStore('tasks', () => {
-  const tasks = ref(loadTasks() || seedTasks())
+  const tasks = ref([])
+  const loaded = ref(false)
 
   const doneCount = computed(() => tasks.value.filter((t) => t.done).length)
   const totalCount = computed(() => tasks.value.length)
 
-  function save() {
-    persistTasks(tasks.value)
+  function reset() {
+    tasks.value = []
+    loaded.value = false
+  }
+
+  async function loadFromServer() {
+    try {
+      const data = await fetchTasks()
+      tasks.value = Array.isArray(data) ? data : []
+    } catch {
+      tasks.value = []
+    } finally {
+      loaded.value = true
+    }
+  }
+
+  async function saveToServer() {
+    try {
+      const saved = await replaceTasks(tasks.value)
+      if (Array.isArray(saved)) tasks.value = saved
+    } catch {
+      /* 离线时仅保留内存态 */
+    }
+  }
+
+  async function save() {
+    await saveToServer()
   }
 
   function addTask(category, content, source = 'ai') {
@@ -53,11 +54,10 @@ export const useTasksStore = defineStore('tasks', () => {
       source,
     }
     tasks.value.push(task)
-    save()
+    saveToServer()
     return task
   }
 
-  /** 追加 AI 同步的多条今日任务（不重复清空已有） */
   function addTasksFromAi(taskList) {
     const added = []
     ;(taskList || []).forEach(({ category, content }) => {
@@ -69,12 +69,12 @@ export const useTasksStore = defineStore('tasks', () => {
 
   function removeTask(id) {
     tasks.value = tasks.value.filter((t) => t.id !== id)
-    save()
+    saveToServer()
   }
 
   function togglePin(task) {
     task.pinned = !task.pinned
-    save()
+    saveToServer()
   }
 
   function applySpeakingFocus() {
@@ -91,8 +91,11 @@ export const useTasksStore = defineStore('tasks', () => {
 
   return {
     tasks,
+    loaded,
     doneCount,
     totalCount,
+    reset,
+    loadFromServer,
     addTask,
     addTasksFromAi,
     removeTask,

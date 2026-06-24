@@ -166,10 +166,6 @@ async function onSubmitDiagnosis() {
     const score =
       diagnosisResult.value.updated_score ??
       estimatedListeningBand(correct, total)
-    userStore.recordGrade('listening', score, {
-      title: `听力 ${props.lesson.title} AI 深度诊断已送达`,
-      meta: `预估分 ${formatIeltsBand(score)} · ${total - correct} 题需复盘`,
-    })
     await userStore.refresh()
     questions.value = syncQuestionNav(iframeRef.value)
   } catch (err) {

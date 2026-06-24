@@ -15,15 +15,15 @@ function onTasksAdjust(mode) {
   }
 }
 
-onMounted(() => userStore.refresh())
+onMounted(() => userStore.initializeAfterLogin())
 </script>
 
 <template>
   <div class="flex w-full max-w-[1120px] flex-col gap-10 pb-10">
     <header class="pt-2">
       <p class="text-sm font-medium text-[var(--color-accent)]">Home Page</p>
-      <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">主页 (Home Page)</h1>
-      <p class="mt-3 text-slate-500">AI智能调度 · 今日任务 · 温和专注的备考空间</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">主页</h1>
+      <p class="mt-3 text-slate-500">AI智能助手 · 今日任务 · 温和专注的备考空间</p>
     </header>
 
     <AiChatPanel @tasks-adjust="onTasksAdjust" />

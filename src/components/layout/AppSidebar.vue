@@ -4,15 +4,18 @@ import { useRoute, useRouter } from 'vue-router'
 import { LogOut, Sparkles } from 'lucide-vue-next'
 import { navItems } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth'
+import { useTasksStore } from '@/stores/tasks'
 import { useUserStore } from '@/stores/user'
+import { formatOptionalBand } from '@/utils/ieltsScore'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const userStore = useUserStore()
+const tasksStore = useTasksStore()
 
 const activeName = computed(() => route.name)
-const targetScore = computed(() => userStore.profile?.target_score ?? 7.0)
+const targetScore = computed(() => formatOptionalBand(userStore.profile?.target_score))
 
 function go(path) {
   if (route.path !== path) router.push(path)
@@ -21,6 +24,7 @@ function go(path) {
 function logout() {
   auth.logout()
   userStore.applyLocal(null)
+  tasksStore.reset()
   router.replace('/login')
 }
 </script>
@@ -72,7 +76,9 @@ function logout() {
         </div>
         <div class="hidden xl:block">
           <p class="text-xs font-semibold text-slate-700">备考学员</p>
-          <p class="text-[10px] text-slate-400">目标 {{ targetScore }}</p>
+          <p class="text-[10px] text-slate-400">
+            {{ targetScore === '—' ? '目标未设定' : `目标 ${targetScore}` }}
+          </p>
         </div>
       </div>
       <button

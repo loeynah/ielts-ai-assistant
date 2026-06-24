@@ -4,9 +4,10 @@ import SoftCard from '@/components/ui/SoftCard.vue'
 import SpeakingTtsButton from '@/components/speaking/SpeakingTtsButton.vue'
 import SpeakingRecorder from '@/components/speaking/SpeakingRecorder.vue'
 import SpeakingAudioPlayer from '@/components/speaking/SpeakingAudioPlayer.vue'
+import SpeakingPracticeReport from '@/components/speaking/SpeakingPracticeReport.vue'
 import { SPEAKING_TIMERS } from '@/config/speakingExams'
 import { requestSpeakingPracticeGrade } from '@/api/speaking'
-import { saveSpeakingRecord } from '@/utils/speakingHistory'
+import { loadSpeakingHistory } from '@/utils/speakingHistory'
 import { useUserStore } from '@/stores/user'
 import { isSpeechRecognitionSupported } from '@/utils/speechStt'
 import { hasValidSpeakingAnswer } from '@/utils/speechValidation'
@@ -77,23 +78,12 @@ async function submitRecording() {
       question: currentQ,
       transcript,
       duration,
-    })
-    const score = Number(gradeResult.value?.score) || 0
-    if (score > 0) {
-      userStore.recordGrade('speaking', score, {
-        title: '口语自定义训练单题批改已完成',
-        meta: `评分 ${score}`,
-      })
-      await userStore.refresh()
-    }
-    const list = saveSpeakingRecord({
-      exam_id: props.examId,
-      exam_title: props.examTitle,
-      mode: 'practice',
-      overall_score: gradeResult.value?.score ?? 0,
-      sub_scores: { FC: gradeResult.value?.score ?? 0, LR: gradeResult.value?.score ?? 0 },
+      examId: props.examId,
+      examTitle: props.examTitle,
       rounds: followUpIndex.value + 1,
     })
+    await userStore.refresh()
+    const list = await loadSpeakingHistory()
     emit('history-updated', list)
   } catch (err) {
     inputError.value = err?.message || '批改失败，请确认后端已启动。'
@@ -191,18 +181,8 @@ onUnmounted(releasePendingAudio)
         </div>
       </div>
 
-      <div v-if="gradeResult" class="mt-5 space-y-4 rounded-3xl bg-[var(--color-surface-muted)] p-5">
-        <p v-if="gradeResult.score != null" class="text-sm font-semibold" :class="gradeResult.score > 0 ? 'text-[var(--color-accent)]' : 'text-amber-600'">
-          {{ gradeResult.score > 0 ? `AI 实时评分：${gradeResult.score}` : '未检测到有效回答，无法评分' }}
-        </p>
-        <p class="text-sm text-slate-700">{{ gradeResult.advice }}</p>
-        <div v-if="gradeResult.vocab_upgrades?.length">
-          <p class="mb-2 text-xs font-semibold text-slate-400">高级词汇替换示范</p>
-          <p v-for="(v, i) in gradeResult.vocab_upgrades" :key="i" class="text-sm text-slate-600">
-            <span class="text-red-500 line-through">{{ v.original }}</span>
-            → <span class="font-medium text-emerald-700">{{ v.upgrade }}</span>
-          </p>
-        </div>
+      <div v-if="gradeResult" class="mt-5 space-y-4">
+        <SpeakingPracticeReport :result="gradeResult" />
         <div class="flex flex-wrap gap-2">
           <button type="button" class="rounded-xl bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-white" @click="continueNext">
             继续挑战下一题

@@ -60,7 +60,7 @@ router.beforeEach(async (to) => {
   const userStore = useUserStore()
   if (!userStore.profile) {
     try {
-      await userStore.refresh()
+      await userStore.initializeAfterLogin()
     } catch {
       auth.logout()
       return '/login'

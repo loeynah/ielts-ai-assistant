@@ -1,5 +1,7 @@
-"""诊断 items 合并 — 保证与前端题号列表绝对同步"""
+"""诊断 items 合并 — 保证与前端题号列表绝对同步，客观对错强制对齐"""
 from __future__ import annotations
+
+from app.grading_rules import objective_is_correct
 
 
 def _q_sort_key(qid: str) -> tuple:
@@ -53,8 +55,10 @@ def ensure_diagnosis_items(
             item["question_id"] = qid
             item["display_num"] = num
             item["label"] = num
+            item["is_correct"] = objective_is_correct(user, correct)
+            item["correct_answer"] = item.get("correct_answer") or correct
             merged.append(item)
         else:
-            is_correct = user.strip().lower() == correct.strip().lower() and user.strip() not in ("", "—")
+            is_correct = objective_is_correct(user, correct)
             merged.append(mock_item_fn(qid, user, correct, is_correct, num, mode))
     return merged

@@ -1,36 +1,23 @@
-"""主页 AI 智能管家 — 时间注入 + 结构化任务输出"""
+"""主页 AI 智能管家 — 时间注入 + 两阶段备考计划 + 官方科普"""
 from __future__ import annotations
 
 from app.chat_parser import parse_chat_response
 from app.deepseek_client import chat_completion
-from app.time_context import build_time_system_prompt, days_until
+from app.prompt_manager import chat_butler_system
+from app.time_context import days_until
 
-PLAN_KEYWORDS = ("计划", "plan", "安排", "训练", "备考", "打卡", "日程", "冲刺", "复习")
+PLAN_KEYWORDS = ("计划", "plan", "安排", "训练", "备考", "打卡", "日程", "冲刺", "复习", "倒计时", "报名", "考试")
 
 
 async def build_plan_reply(user_message: str, user_profile: dict | None = None) -> dict:
     profile = user_profile or {}
-    exam_date = profile.get("exam_date", "2026-06-25")
-    target_score = profile.get("target_score", 7.0)
+    exam_date = profile.get("exam_date") or None
+    target_score = profile.get("target_score")
+    if target_score is not None and target_score < 0:
+        target_score = None
     countdown = days_until(exam_date)
 
-    system = (
-        build_time_system_prompt()
-        + "\n\n你是雅思 AI 智能管家。请根据用户具体问题灵活回答，禁止套用固定模板。"
-        f"\n用户当前画像：考试日期 {exam_date}（距今天还有 {countdown} 天），目标分 {target_score}。"
-        "\n能力：考试流程科普、英文答疑、基于真实倒计时的备考计划。"
-        "\n要求：中文、结构清晰、直接回应用户每个要点；计划天数不得超过距考试剩余天数。"
-        "\n\n当回复涉及备考计划或可执行今日任务时，必须在正文之后附加以下结构化块（前端会自动剥离）："
-        "\n[META]"
-        "\nexam_date: YYYY-MM-DD（用户修改考试日期时更新，否则保持当前值）"
-        "\ntarget_score: 数字（用户修改目标分时更新）"
-        "\n[/META]"
-        "\n[TODAY_TASKS]"
-        "\nlistening|今日听力任务（一行一条）"
-        "\nspeaking|今日口语任务"
-        "\n[/TODAY_TASKS]"
-        "\ncategory 仅可为 listening/reading/speaking/writing。"
-    )
+    system = chat_butler_system(exam_date, target_score, countdown)
 
     messages = [
         {"role": "system", "content": system},
@@ -38,7 +25,7 @@ async def build_plan_reply(user_message: str, user_profile: dict | None = None) 
     ]
 
     try:
-        raw = (await chat_completion(messages, temperature=0.7)).strip()
+        raw = (await chat_completion(messages, temperature=0.5)).strip()
         parsed = parse_chat_response(raw)
         wants_plan = any(k in user_message for k in PLAN_KEYWORDS) or bool(parsed["today_tasks"])
 
@@ -63,7 +50,9 @@ async def build_plan_reply(user_message: str, user_profile: dict | None = None) 
         return {
             "content": (
                 f"抱歉，AI 调用失败：{exc}\n\n"
-                "请检查 backend/.env 中的 DEEPSEEK_API_KEY 是否正确，修改后重启后端。"
+                "请检查 backend/.env：DEEPSEEK_API_KEY 是否已填入 SiliconFlow Key，"
+                "DEEPSEEK_BASE_URL=https://api.siliconflow.cn/v1，"
+                "DEEPSEEK_MODEL=deepseek-ai/DeepSeek-V3；修改后重启后端。"
             ),
             "actions": [],
             "emit_plan": False,

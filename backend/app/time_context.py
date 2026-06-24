@@ -12,11 +12,17 @@ def get_current_date_iso() -> str:
     return get_current_date().isoformat()
 
 
-def days_until(exam_date_iso: str) -> int:
+def days_until(exam_date_iso: str | None) -> int | None:
+    """距考试日天数；未设置或格式无效时返回 None"""
+    if not exam_date_iso or not isinstance(exam_date_iso, str):
+        return None
+    text = exam_date_iso.strip()
+    if not text:
+        return None
     try:
-        target = date.fromisoformat(exam_date_iso)
+        target = date.fromisoformat(text)
     except ValueError:
-        return 0
+        return None
     today = get_current_date()
     return max(0, (target - today).days)
 

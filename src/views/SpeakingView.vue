@@ -12,7 +12,7 @@ import {
   SPEAKING_TIMERS,
   getSpeakingExam,
 } from '@/config/speakingExams'
-import { loadSpeakingHistory, saveSpeakingRecord } from '@/utils/speakingHistory'
+import { loadSpeakingHistory } from '@/utils/speakingHistory'
 import { requestSpeakingExamGrade } from '@/api/speaking'
 import { useUserStore } from '@/stores/user'
 import { preloadVoices } from '@/utils/speechTts'
@@ -25,7 +25,7 @@ const modes = [
 
 const activeMode = ref('exam')
 const selectedExamId = ref(SPEAKING_EXAMS[0].id)
-const history = ref(loadSpeakingHistory())
+const history = ref([])
 const userStore = useUserStore()
 const scrollToChart = ref(false)
 
@@ -184,25 +184,8 @@ async function submitExam() {
     })
     report.value = grade
     examPhase.value = 'report'
-    const overall = Number(grade.overall_score) || 0
-    if (overall > 0) {
-      userStore.recordGrade('speaking', overall, {
-        title: '口语模拟考试 AI 批改报告已送达',
-        meta: `Overall ${overall}`,
-      })
-    }
     await userStore.refresh()
-    history.value = saveSpeakingRecord({
-      exam_id: selectedExamId.value,
-      exam_title: exam.value.title,
-      mode: 'exam',
-      overall_score: grade.overall_score,
-      sub_scores: grade.sub_scores,
-      audio_count:
-        recordings.value.part1.length +
-        (recordings.value.part2 ? 1 : 0) +
-        recordings.value.part3.length,
-    })
+    history.value = await loadSpeakingHistory()
   } finally {
     isGrading.value = false
   }
@@ -212,7 +195,10 @@ const formatPrep = (s) =>
   `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
 onUnmounted(clearPrepTimer)
-onMounted(preloadVoices)
+onMounted(async () => {
+  preloadVoices()
+  history.value = await loadSpeakingHistory()
+})
 
 function onHistoryUpdated(list) {
   history.value = list
@@ -224,7 +210,7 @@ function onHistoryUpdated(list) {
     <header class="pt-2">
       <p class="text-sm font-medium text-[var(--color-accent)]">Speaking</p>
       <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">口语评测</h1>
-      <p class="mt-2 text-slate-500">标准模拟考试 · 自定义训练 · 得分趋势</p>
+      <p class="mt-2 text-slate-500">标准模拟考试 · 自定义训练 · AI深度诊断</p>
     </header>
 
     <SpeakingScoreChart ref="chartRef" :history="history" :class="scrollToChart ? 'ring-2 ring-[var(--color-accent)]' : ''" />

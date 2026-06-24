@@ -33,7 +33,7 @@ function selectLesson(id) {
     <header class="pt-2">
       <p class="text-sm font-medium text-[var(--color-accent)]">Reading</p>
       <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">阅读真题训练</h1>
-      <p class="mt-2 text-slate-500">双栏学术精读 · AI双轨实时赋能</p>
+      <p class="mt-2 text-slate-500">真题训练 · AI深度诊断</p>
     </header>
 
     <!-- 第一级：Passage -->

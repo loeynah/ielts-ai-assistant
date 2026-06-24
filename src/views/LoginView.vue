@@ -9,8 +9,10 @@ const router = useRouter()
 const auth = useAuthStore()
 const userStore = useUserStore()
 
-const username = ref('admin')
-const password = ref('123456')
+const isRegister = ref(false)
+const username = ref('')
+const password = ref('')
+const confirmPassword = ref('')
 const error = ref('')
 const loading = ref(false)
 
@@ -18,14 +20,32 @@ async function onSubmit() {
   error.value = ''
   loading.value = true
   try {
-    await auth.login(username.value.trim(), password.value)
-    userStore.applyLocal(auth.user)
+    if (isRegister.value) {
+      if (password.value !== confirmPassword.value) {
+        error.value = '两次输入的密码不一致'
+        return
+      }
+      if (password.value.length < 6) {
+        error.value = '密码至少 6 位'
+        return
+      }
+      await auth.register(username.value.trim(), password.value)
+    } else {
+      await auth.login(username.value.trim(), password.value)
+    }
+    await userStore.initializeAfterLogin()
     router.replace('/dashboard')
-  } catch {
-    error.value = '账号或密码错误，请使用 admin / 123456'
+  } catch (err) {
+    error.value = err?.message || (isRegister.value ? '注册失败，用户名可能已存在' : '账号或密码错误')
   } finally {
     loading.value = false
   }
+}
+
+function toggleMode() {
+  isRegister.value = !isRegister.value
+  error.value = ''
+  confirmPassword.value = ''
 }
 </script>
 
@@ -55,7 +75,16 @@ async function onSubmit() {
           <input
             v-model="password"
             type="password"
-            autocomplete="current-password"
+            :autocomplete="isRegister ? 'new-password' : 'current-password'"
+            class="w-full rounded-2xl bg-[var(--color-surface-muted)] px-4 py-3 text-sm outline-none ring-1 ring-slate-100 focus:ring-[var(--color-accent)]/40"
+          />
+        </div>
+        <div v-if="isRegister">
+          <label class="mb-1.5 block text-xs font-medium text-slate-500">确认密码</label>
+          <input
+            v-model="confirmPassword"
+            type="password"
+            autocomplete="new-password"
             class="w-full rounded-2xl bg-[var(--color-surface-muted)] px-4 py-3 text-sm outline-none ring-1 ring-slate-100 focus:ring-[var(--color-accent)]/40"
           />
         </div>
@@ -65,9 +94,15 @@ async function onSubmit() {
           class="w-full rounded-2xl bg-[var(--color-accent)] py-3.5 text-sm font-semibold text-white shadow-[var(--shadow-soft-lg)] transition hover:opacity-95 disabled:opacity-60"
           :disabled="loading"
         >
-          {{ loading ? '登录中…' : '进入备考系统' }}
+          {{ loading ? (isRegister ? '注册中…' : '登录中…') : isRegister ? '注册并进入' : '进入备考系统' }}
         </button>
       </form>
+
+      <p class="mt-6 text-center text-sm text-slate-500">
+        <button type="button" class="font-medium text-[var(--color-accent)] hover:underline" @click="toggleMode">
+          {{ isRegister ? '已有账号？返回登录' : '没有账号？立即注册' }}
+        </button>
+      </p>
     </div>
   </div>
 </template>

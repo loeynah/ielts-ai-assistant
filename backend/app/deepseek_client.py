@@ -7,7 +7,7 @@ from typing import Any
 
 import httpx
 
-from app.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL
+from app.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL, is_llm_key_configured
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,17 @@ async def chat_completion(
     temperature: float = 0.4,
     json_mode: bool = False,
 ) -> str:
-    if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == "123":
-        raise RuntimeError("未配置 DEEPSEEK_API_KEY，请在 backend/.env 中设置")
+    if not is_llm_key_configured():
+        raise RuntimeError(
+            "未配置 DEEPSEEK_API_KEY：请在 backend/.env 填入 SiliconFlow API Key（须为英文 sk- 开头字符串，勿留中文占位符）"
+        )
+
+    try:
+        DEEPSEEK_API_KEY.encode("ascii")
+    except UnicodeEncodeError as exc:
+        raise RuntimeError(
+            "DEEPSEEK_API_KEY 含非 ASCII 字符，请检查 .env 是否仍为中文占位符；应粘贴 SiliconFlow 控制台复制的 Key"
+        ) from exc
 
     headers = {
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}",

@@ -42,10 +42,6 @@ async function runDiagnosis() {
     const items = diagnosis.value.items || []
     const wrongCount = items.filter((i) => !i.is_correct).length
     const score = diagnosis.value.updated_score ?? 6
-    userStore.recordGrade('reading', score, {
-      title: `阅读 ${props.examTitle || props.examId} AI 深度诊断已送达`,
-      meta: `预估分 ${formatIeltsBand(score)} · ${wrongCount} 题需复盘`,
-    })
     await userStore.refresh()
   } finally {
     isDiagnosing.value = false

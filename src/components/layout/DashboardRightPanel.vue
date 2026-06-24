@@ -3,7 +3,7 @@ import { computed, onMounted } from 'vue'
 import { FileText, Mic } from 'lucide-vue-next'
 import SoftCard from '@/components/ui/SoftCard.vue'
 import RightCalendar from '@/components/dashboard/RightCalendar.vue'
-import { formatIeltsBand } from '@/utils/ieltsScore'
+import { formatOptionalBand } from '@/utils/ieltsScore'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -15,15 +15,23 @@ const inboxItems = computed(() => userStore.profile?.inbox || [])
 const skillScores = computed(() => {
   const s = userStore.profile?.skill_scores || {}
   return [
-    { key: 'listening', label: '听力', score: formatIeltsBand(s.listening ?? 6.0) },
-    { key: 'reading', label: '阅读', score: formatIeltsBand(s.reading ?? 6.0) },
-    { key: 'speaking', label: '口语', score: formatIeltsBand(s.speaking ?? 6.0) },
-    { key: 'writing', label: '写作', score: formatIeltsBand(s.writing ?? 6.0) },
+    { key: 'listening', label: '听力', score: formatOptionalBand(s.listening) },
+    { key: 'reading', label: '阅读', score: formatOptionalBand(s.reading) },
+    { key: 'speaking', label: '口语', score: formatOptionalBand(s.speaking) },
+    { key: 'writing', label: '写作', score: formatOptionalBand(s.writing) },
   ]
 })
 
-const overallScore = computed(() => formatIeltsBand(userStore.profile?.overall_score ?? 6.0))
-const targetScore = computed(() => formatIeltsBand(userStore.profile?.target_score ?? 7.0))
+const overallScore = computed(() => formatOptionalBand(userStore.profile?.overall_score))
+const targetScore = computed(() => formatOptionalBand(userStore.profile?.target_score))
+const diagnosisSubtitle = computed(() => {
+  const overall = overallScore.value
+  const target = targetScore.value
+  if (overall === '—' && target === '—') return '综合与目标尚未设定 · 与 AI 助手对话开始'
+  if (target === '—') return `综合 ${overall} · 目标未设定`
+  if (overall === '—') return `综合未评估 · 目标 ${target}`
+  return `综合 ${overall} · 目标 ${target}`
+})
 </script>
 
 <template>
@@ -54,7 +62,7 @@ const targetScore = computed(() => formatIeltsBand(userStore.profile?.target_sco
     <SoftCard
       class="bg-gradient-to-br from-white via-[var(--color-accent-soft)]/30 to-[var(--color-beige)]/40"
       title="AI 实时能力诊断"
-      :subtitle="`综合 ${overallScore} · 目标 ${targetScore}`"
+      :subtitle="diagnosisSubtitle"
     >
       <div class="grid grid-cols-4 gap-2">
         <div
