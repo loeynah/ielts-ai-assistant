@@ -1,0 +1,572 @@
+此内容由🍠@Listening 永不虾滑整理，仅作为分享供个人使用；禁止商用、倒卖和引流。有问题请先仔细看🍠这个账号的置顶和分享贴。没有团队，不是机构，纯个人分享。督学和其他相关课程请咨询主页另一个号@心情有点虾滑（不回任何机经相关消息）。
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>IELTS Listening Simulator | RDA 机考模拟器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* ---------- 全局变量 & 重置 ---------- */
+  :root { 
+    --splitter-width: 6px; 
+    --splitter-color: #e2e8f0; 
+    --bg-color: #f8fafc;
+    --panel-color: #ffffff;
+    --text-color: #0f172a;
+    --border-color: #e2e8f0;
+    --accent-color: #3b82f6;
+    --answered-bg: #dbeafe;
+    --answered-border: #93c5fd;
+    --answered-text: #1e40af;
+    --correct-bg: #dcfce7;
+    --correct-border: #4ade80;
+    --correct-text: #166534;
+    --incorrect-bg: #fee2e2;
+    --incorrect-border: #f87171;
+    --incorrect-text: #991b1b;
+    --shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.02);
+  }
+  html.font-regular { font-size: 16px; }
+  html.font-large { font-size: 18px; }
+  html.font-xlarge { font-size: 20px; }
+
+  body.dark-mode {
+    --bg-color: #0f172a;
+    --panel-color: #1e293b;
+    --text-color: #e2e8f0;
+    --border-color: #334155;
+    --splitter-color: #334155;
+    --accent-color: #60a5fa;
+    --answered-bg: #1e3a8a;
+    --answered-border: #3b82f6;
+    --answered-text: #bfdbfe;
+    --correct-bg: #14532d;
+    --correct-border: #22c55e;
+    --correct-text: #bbf7d0;
+    --incorrect-bg: #7f1d1d;
+    --incorrect-border: #ef4444;
+    --incorrect-text: #fecaca;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body, .shell { background: var(--bg-color); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--text-color); font-weight: 500; }
+  .shell { display: flex; flex-direction: column; height: 100vh; }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 28px;
+    background: var(--panel-color);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  .header h1 { font-size: 1.3rem; font-weight: 500; margin: 0; }
+  .header-btn {
+    background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 40px;
+    padding: 6px 18px; cursor: pointer; color: var(--text-color); font-weight: 500;
+    transition: all 0.2s;
+  }
+  .header-btn:hover { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+  
+  #settings-panel {
+    position: fixed; top: 68px; right: 24px; width: 240px; background: var(--panel-color);
+    border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color);
+    z-index: 1001; padding: 12px; display: none; backdrop-filter: blur(8px);
+  }
+  .settings-group { margin-bottom: 12px; }
+  .settings-title { font-size: 0.75rem; color: #64748b; margin-bottom: 8px; font-weight: 500; }
+  .settings-options { display: flex; gap: 8px; }
+  .settings-option { flex: 1; text-align: center; padding: 6px; border: 1px solid var(--border-color); background: var(--bg-color); cursor: pointer; font-size: 0.85rem; border-radius: 40px; font-weight: 500; }
+  .settings-option.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+  .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2); z-index: 1000; display: none; }
+
+  #main-shell { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
+  #left-pane { flex: 1 1 100%; overflow-y: auto; background: var(--panel-color); transition: flex-basis 0.2s ease; }
+  #splitter { width: var(--splitter-width); background: var(--splitter-color); cursor: col-resize; display: none; }
+  #splitter:hover { background: var(--accent-color); }
+  #right-pane { flex: 0 0 0; overflow-y: auto; background: var(--bg-color); display: none; padding: 0 24px; border-left: 1px solid var(--border-color); }
+  #main-shell.split-view #left-pane { flex-basis: 55%; }
+  #main-shell.split-view #splitter { display: block; }
+  #main-shell.split-view #right-pane { display: block; flex-basis: calc(45% - var(--splitter-width)); }
+
+  #sticky-header { position: sticky; top: 0; z-index: 12; background: var(--panel-color); padding: 20px 28px 8px; border-bottom: 1px solid var(--border-color); }
+  .audio-player { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .play-pause-btn { background: var(--accent-color); color: white; border: none; border-radius: 60px; width: 42px; height: 42px; font-size: 1.3rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-weight: 500; }
+  .progress-container { flex-grow: 1; min-width: 160px; cursor: pointer; }
+  .progress-bar-wrapper { width: 100%; height: 6px; background-color: #e2e8f0; border-radius: 10px; overflow: hidden; }
+  body.dark-mode .progress-bar-wrapper { background-color: #334155; }
+  .progress-bar { width: 0%; height: 100%; background-color: var(--accent-color); border-radius: 10px; }
+  .time-display { font-size: 0.85rem; font-family: monospace; min-width: 100px; }
+  .speed-control select { padding: 5px 8px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--bg-color); font-weight: 500; }
+
+  #test-pages-container { padding: 20px 28px 80px; }
+  .group { border: 1px solid var(--border-color); border-radius: 24px; padding: 20px 24px; margin: 28px 0; background: var(--panel-color); position: relative; }
+  .group h4 { margin-top: 0; margin-bottom: 12px; font-size: 1.2rem; font-weight: 500; }
+  .instructions { background: var(--bg-color); padding: 8px 14px; border-radius: 16px; font-size: 0.85rem; margin-bottom: 20px; border-left: 4px solid var(--accent-color); font-weight: 400; }
+  
+  input.blank { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 8px 12px; width: 160px; font-size: 0.95rem; background: var(--bg-color); color: var(--text-color); font-weight: 400; }
+  input.blank:focus { border-color: var(--accent-color); outline: none; }
+  label { display: block; margin: 8px 0; cursor: pointer; font-weight: 500; }
+  
+  /* --- 匹配题拖拽相关样式 --- */
+  .matching-flex { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  .match-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .match-q b { font-weight: 700; background: var(--bg-color); padding: 4px 10px; border-radius: 40px; }
+  .match-slot { min-width: 110px; min-height: 46px; border: 2px dashed #94a3b8; border-radius: 20px; background: var(--bg-color); display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; transition: background 0.1s; }
+  .match-slot.filled { border-color: var(--accent-color); background: #eff6ff; }
+  body.dark-mode .match-slot.filled { background: #1e293b; }
+  .tag { background: var(--accent-color); color: white; padding: 6px 14px; border-radius: 40px; cursor: grab; user-select: none; font-weight: 500; font-size: 0.85rem; display: inline-block; }
+  .drag-pool { background: var(--bg-color); padding: 16px; border-radius: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color); min-height: 280px; }
+  .drag-option { background: var(--panel-color); border: 1px solid var(--border-color); border-radius: 40px; padding: 8px 14px; cursor: grab; user-select: none; transition: 0.1s; }
+  .drag-option.hidden-in-pool { display: none; }
+
+  .bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; height: 70px; background: var(--panel-color); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; z-index: 100; }
+  .bb-left, .bb-center { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .q-nav-container { display: flex; gap: 10px; flex-wrap: wrap; max-width: 460px; }
+  .q-nav-item { display: flex; align-items: center; justify-content: center; min-width: 38px; height: 38px; border-radius: 40px; background: var(--bg-color); border: 1px solid var(--border-color); font-weight: 500; cursor: pointer; }
+  .q-nav-item.answered { background: var(--answered-bg); border-color: var(--answered-border); color: var(--answered-text); }
+  .q-nav-item.correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+  .q-nav-item.incorrect { background: var(--incorrect-bg); border-color: var(--incorrect-border); color: var(--incorrect-text); }
+  button { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 40px; padding: 8px 16px; cursor: pointer; font-weight: 500; color: var(--text-color); }
+  button:hover { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+  #timer { font-family: monospace; font-size: 1.3rem; font-weight: 500; background: #0f172a10; padding: 4px 12px; border-radius: 60px; }
+
+  /* 高亮样式 */
+  .hl-brown { background-color: #8B4513 !important; color: #ffffff !important; border-radius: 6px; padding: 0 2px; }
+  .hl-rose { background-color: #C2185B !important; color: #ffffff !important; border-radius: 6px; padding: 0 2px; }
+  .hl-blue { background-color: #3b82f6 !important; color: #ffffff !important; border-radius: 6px; cursor: pointer; padding: 0 2px; }
+  #selbar { position: absolute; background: var(--panel-color); backdrop-filter: blur(12px); border-radius: 60px; box-shadow: var(--shadow); padding: 6px 12px; gap: 8px; display: inline-flex; z-index: 1000; border: 1px solid var(--border-color); }
+  #selbar[hidden] { display: none; }
+  #selbar button { border: none; background: #f1f5f9; padding: 6px 14px; border-radius: 40px; font-size: 0.8rem; cursor: pointer; font-weight: 500; }
+  
+  body.notes-open { padding-right: 420px; }
+  #notes { position: fixed; right: -420px; top: 0; bottom: 70px; width: 420px; background: var(--panel-color); border-left: 1px solid var(--border-color); transition: right 0.25s ease; z-index: 99; display: flex; flex-direction: column; box-shadow: -5px 0 20px rgba(0,0,0,0.05); }
+  body.notes-open #notes { right: 0; }
+  .side-panel-header { display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: 500; }
+  #notes-list { overflow-y: auto; padding: 16px; flex-grow: 1; }
+  .note-card { background: var(--bg-color); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+  .note-quote { font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; background: #f1f5f9; padding: 8px; border-radius: 12px; }
+  .note-card textarea { width: 100%; min-height: 80px; border-radius: 16px; border: 1px solid var(--border-color); padding: 10px; background: var(--panel-color); color: var(--text-color); margin: 8px 0; font-weight: 400; }
+  .note-actions button { background: transparent; border: 1px solid var(--incorrect-border); color: var(--incorrect-text); border-radius: 30px; padding: 6px 12px; }
+  
+  /* 批改结果仅一次的全局大表格样式 */
+  .global-results-wrapper { margin-top: 40px; border-top: 2px dashed var(--border-color); padding-top: 24px; padding-bottom: 40px;}
+  .results-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: var(--panel-color); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+  .results-table th, .results-table td { border: 1px solid var(--border-color); padding: 14px 18px; text-align: left; font-weight: 500; }
+  .results-table th { background: var(--bg-color); font-weight: 600; }
+  .result-correct { color: #16a34a; font-weight: 600; }
+  .result-incorrect { color: #dc2626; font-weight: 600; }
+  
+  .answer-highlight { background-color: #fde047; color: #0f172a; padding: 2px 4px; border-radius: 8px; font-weight: 500; }
+  body.dark-mode .answer-highlight { background-color: #facc15; color: #0f172a; }
+  #transcript-content p { line-height: 1.6; margin-bottom: 12px; font-weight: 400; }
+  #transcript-content { padding-bottom: 90px; }
+  #toast { position: fixed; bottom: 90px; right: 28px; background: #10b981; color: white; padding: 10px 20px; border-radius: 60px; opacity: 0; transition: 0.2s; pointer-events: none; z-index: 200; font-weight: 500; }
+  #toast.show { opacity: 1; transform: translateY(-6px); }
+</style>
+</head>
+<body class="font-regular">
+<div class="shell">
+  <header class="header"><h1>IELTS Listening Practice · Riding for the Disabled (RDA)</h1><button id="settings-btn" class="header-btn">⚙️ Text Size/Color</button></header>
+  <div id="settings-panel"><div class="settings-group"><div class="settings-title">Font Size</div><div class="settings-options"><button class="settings-option active" data-size="regular">Regular</button><button class="settings-option" data-size="large">Large</button><button class="settings-option" data-size="xlarge">X-Large</button></div></div><div class="settings-group"><div class="settings-title">Color Mode</div><div class="settings-options"><button class="settings-option active" data-mode="light">Light</button><button class="settings-option" data-mode="dark">Dark</button></div></div></div>
+  <div class="overlay"></div>
+  <div id="main-shell"><div id="left-pane"><div id="sticky-header"><div class="audio-player-wrapper"></div></div><div id="test-pages-container"></div></div><div id="splitter"></div><div id="right-pane"><div id="transcript-content"><h4>📜 Listening Transcript</h4></div></div></div>
+  <div class="bottom-bar"><div class="bb-left"><div id="q-nav-container" class="q-nav-container"></div></div><div class="bb-center"><span id="timer">00:00</span><button id="finish-btn">Finish</button><button id="save-btn">Save</button><button id="clear-btn">Clear</button><button id="toggle-notes-btn">📝 Notes</button><button id="toggle-transcript-btn">📄 Transcript</button></div></div>
+  <div id="notes"><div class="side-panel-header"><span>📘 My Notes</span><button id="notes-close" class="side-panel-close">✕</button></div><div id="notes-list"></div></div>
+  <div id="selbar" hidden><button data-act="hl">Highlight</button><button data-act="note">Note</button><button data-act="del">Clear</button></div>
+  <div id="toast">Progress saved!</div>
+
+<script>
+(function(){
+  // ----- RDA 标准答案库 -----
+  const CONFIG = {
+    localStorageKey: 'ielts_rda_ultimate_v2',
+    questionIds: ['11','12','13','14','15','16','17','18','19-20'],
+    answerKey: {
+      single: { 'q11':'B', 'q12':'B' },
+      text: { 'q13':'40', 'q14':'25' },
+      matching: { 'q15':'B', 'q16':'C', 'q17':'A', 'q18':'C' },
+      multiple: { '19_20': ['B','E'] }
+    }
+  };
+
+  // ----- 完整Transcript (高亮答案标记, 底部增加留白)-----
+  const fullTranscriptHTML = `
+    <h4>📖 Listening Transcript (Answers Highlighted)</h4>
+    <button id="close-transcript-btn" style="float:right; background:var(--bg-color); border-radius:30px; margin-bottom:12px; margin-top:0;">✕</button>
+    <div style="clear:both;"></div>
+    <p><strong>Part 2.</strong><br>You will hear a radio talk on horse riding for disabled people.</p>
+    <p>First you have some time to look at questions 11 to 14.</p>
+    <p>Now listen carefully and answer questions 11 to 14.</p>
+    <p>This week our slot is A Life in the Day of Joan Gilbert.</p>
+    <p>Well I always have the very best intentions of starting the day at 5.30 to give the horses a really good muck out, but reality intervenes and I finally wake at about <span class="answer-highlight">6.30</span>. (Q11 ✔)</p>
+    <p>That probably still sounds very early to you, but for a farm worker which is what my son is at the moment, that's cutting things pretty fine. Once I've managed to <span class="answer-highlight">get him safely on his way at about 7 am</span> (Q12 ✔ organise her son), I can start turning my attention to the other important tasks of the day.</p>
+    <p>For about 5 years we've been taking overseas students from the International Centre at our local college and I have to give them a proper breakfast. Most of our students used to be from the Middle East, but they're no longer coming. So we tend to have Malaysian girls and they like to have a cooked breakfast, much more than any Europeans we've had, including me and I don't have anything these days. After cooking I finally get round to the poor horses. It's only after this that I can start thinking about what I regard as my most important task. Work for riding for the disabled.</p>
+    <p>I've been involved with this organisation on and off for over 20 years, but I've only recently taken on the job of chairperson. Most of the work seems more secretarial, but that's how charities get organised. In our immediate district we have had as many as 30 riders, but currently we've only got 22. The number of helpers who have volunteered is actually <span class="answer-highlight">40</span> (Q13), but we can rely on <span class="answer-highlight">25</span> (Q14) to come regularly to help in the different groups. We now have four separate groups which cater for disabled children and adults from 6 to 40 years old.</p>
+    <p>Before you hear the rest of the talk, you have some time to look at questions 15 to 20. Now listen and answer questions 15 to 20.</p>
+    <p>As I say, I feel that although I no longer have any proper full-time paid employment, I do have a fall and busy life. I'm a housewife which I <span class="answer-highlight">don't mind</span> (Q15 doesn't mind → B), because I don't really object to doing things like washing and cooking. Then there's my own horses which I adore, even the revolting stuff like cleaning out the stables. The official RDA stuff is a mixed bag really. I don't have major problems with all the letter writing and correspondence which it entails (Q15 doesn't mind → B), but like lots of shy people I find the <span class="answer-highlight">fundraising horrendous</span> (Q16 hates → C). Other regular RDA duties such as <span class="answer-highlight">ringing round the riders</span> to fix times etc is one of the pleasantest aspects of the work (Q17 really likes → A). After all that's why I'm involved with charity work, the contact with people. My working day ends with least enjoyable job of all <span class="answer-highlight">sorting the accounts</span> (Q18 hates → C).</p>
+    <p>I got involved with RDA because I've always loved horses and I can see disabled people gaining so much. I know all the medical evidence that shows that it does wonders for muscle building and so on which is important, but from talking to the riders they say it is the confidence they gain and also the opportunity to be part of a new and exciting environment which gives them the greatest benefit. In terms of the RDA organisation itself, I feel it works very well, but we're always striving to make it better. I wish for example our helpers and the organisers in the various centres could really rationalise the <span class="answer-highlight">fundraising efforts which sometimes are very inefficient</span> (Q19 → B making fundraising more effective) and it also saddens me how <span class="answer-highlight">unaware some of the stables can be about the difficulties faced by people who are disabled</span> (Q20 → E recognising difficulties of disabled riders). Anyway, I feel very privileged to work with our riders and to see such tangible benefits. It sends me to sleep with a feeling that though the day has been hard, it has been worthwhile. That is the end of part 2. You now have 45 seconds to check your answers to part 2.</p>
+    <div style="height: 200px;"></div> <!-- 底部增加大量留白，防止被底栏遮挡 -->
+  `;
+
+  // ----- 构建RDA题目区域 -----
+  function buildRDAQuestions() {
+    return `
+      <div class="group" id="group-11-12" data-group="11-12"><h4>🔘 Questions 11–12 (Choose correct letter A, B or C)</h4>
+        <div class="instructions"><b>11</b> Joan normally gets up at</div>
+        <label><input type="radio" name="q11" value="A"> A 5:30 a.m.</label>
+        <label><input type="radio" name="q11" value="B"> B 6:30 a.m.</label>
+        <label><input type="radio" name="q11" value="C"> C 7:30 a.m.</label>
+        <div class="instructions" style="margin-top:16px;"><b>12</b> Joan's first task of the day is to</div>
+        <label><input type="radio" name="q12" value="A"> A Clean the horses</label>
+        <label><input type="radio" name="q12" value="B"> B Organise her son</label>
+        <label><input type="radio" name="q12" value="C"> C Do farm work</label>
+      </div>
+
+      <div class="group" id="group-13-14" data-group="13-14"><h4>✍️ Questions 13–14 (ONE WORD AND/OR A NUMBER)</h4>
+        <div class="instructions">In her local district, there are at present twenty-two riders and 13 <input type="text" name="q13" class="blank" autocomplete="off"> helpers on the volunteer list, out of whom 14 <input type="text" name="q14" class="blank" autocomplete="off"> come regularly.</div>
+      </div>
+
+      <div class="group" id="group-15-18"><h4>🔄 Questions 15–18 (Matching - Drag & Drop)</h4>
+        <div class="instructions">How much does Joan like each activity? Drag the correct option to each statement. Options can be used more than once.</div>
+        <div class="matching-flex">
+          <div class="match-list">
+            <div class="match-row"><span class="match-q"><b>15</b> Correspondence</span><span class="match-slot" data-q="15"></span></div>
+            <div class="match-row"><span class="match-q"><b>16</b> Fundraising</span><span class="match-slot" data-q="16"></span></div>
+            <div class="match-row"><span class="match-q"><b>17</b> Calling riders</span><span class="match-slot" data-q="17"></span></div>
+            <div class="match-row"><span class="match-q"><b>18</b> Organizing accounts</span><span class="match-slot" data-q="18"></span></div>
+          </div>
+          <div class="matching-options">
+            <strong>Options</strong>
+            <!-- 注意这里加了 data-reusable="true"，意味着拖拽后选项不消失 -->
+            <div class="drag-pool" data-reusable="true">
+              <div class="drag-option" draggable="true" data-value="A">A. She really likes it.</div>
+              <div class="drag-option" draggable="true" data-value="B">B. She doesn't mind it.</div>
+              <div class="drag-option" draggable="true" data-value="C">C. She hates it.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group" id="group-19-20" data-limit="2" data-group="19-20"><h4>✅ Questions 19–20 (Choose TWO letters A–E)</h4>
+        <div class="instructions">Joan says the two ways the RDA needs to improve are by:</div>
+        <label><input type="checkbox" name="q19_20" value="A"> A Giving special training.</label>
+        <label><input type="checkbox" name="q19_20" value="B"> B Making fundraising more effective.</label>
+        <label><input type="checkbox" name="q19_20" value="C"> C Opening more RDA centres.</label>
+        <label><input type="checkbox" name="q19_20" value="D"> D Providing more helpers.</label>
+        <label><input type="checkbox" name="q19_20" value="E"> E Recognising difficulties of disabled riders.</label>
+        <div class="instructions" style="color:#6b7280; font-size:12px;">* Select exactly 2 options</div>
+      </div>
+    `;
+  }
+
+  const App = {
+    state: { timerSecs:0, timerInterval:null, isReviewing:false, settingsOpen:false, dragSource:null },
+    init(){
+      this.renderInitialContent();
+      this.cacheDom();
+      this.bindEvents();
+      this.loadFromStorage();
+      this.initAudio();
+      this.initSplitter();
+      this.startTimer();
+      this.buildNav();
+      this.updateNavState();
+      this.attachMultiLimit();
+      this.refreshDragPool();
+    },
+    renderInitialContent(){
+      document.querySelector('.audio-player-wrapper').innerHTML = `
+        <div class="audio-player"><button class="play-pause-btn">▶</button><div class="progress-container"><div class="progress-bar-wrapper"><div class="progress-bar"></div></div></div><div class="time-display">00:00 / 00:00</div><div class="speed-control"><select class="playback-speed"><option value="0.7">0.7x</option><option value="1.0" selected>1.0x</option><option value="1.1">1.1x</option><option value="1.2">1.2x</option><option value="1.5">1.5x</option></select></div><audio class="listening-audio" src="audio.mp3" preload="metadata"></audio></div>
+      `;
+      document.getElementById('test-pages-container').innerHTML = buildRDAQuestions();
+    },
+    cacheDom(){
+      this.el = {
+        mainShell: document.getElementById('main-shell'),
+        finishBtn: document.getElementById('finish-btn'), saveBtn: document.getElementById('save-btn'), clearBtn: document.getElementById('clear-btn'),
+        toggleNotes: document.getElementById('toggle-notes-btn'), toggleTranscript: document.getElementById('toggle-transcript-btn'),
+        notes: document.getElementById('notes'), notesList: document.getElementById('notes-list'), notesClose: document.getElementById('notes-close'),
+        timerSpan: document.getElementById('timer'), qNav: document.getElementById('q-nav-container'), transcriptPane: document.getElementById('right-pane'),
+        settingsBtn: document.getElementById('settings-btn'), settingsPanel: document.getElementById('settings-panel'), overlay: document.querySelector('.overlay'),
+        toast: document.getElementById('toast'), testContainer: document.getElementById('test-pages-container')
+      };
+    },
+    bindEvents(){
+      document.addEventListener('input', e => { if(e.target.matches('input,textarea')) this.updateNavState(); });
+      this.el.finishBtn.addEventListener('click', () => this.toggleFinishMode());
+      this.el.saveBtn.addEventListener('click', () => this.saveAll());
+      this.el.clearBtn.addEventListener('click', () => { if(confirm('Clear all progress? All answers, highlights & notes will be erased.')){ localStorage.removeItem(CONFIG.localStorageKey); location.reload(); } });
+      this.el.toggleNotes.addEventListener('click', () => document.body.classList.toggle('notes-open'));
+      this.el.notesClose.addEventListener('click', () => document.body.classList.remove('notes-open'));
+      this.el.toggleTranscript.addEventListener('click', () => { this.el.mainShell.classList.toggle('split-view'); if(this.el.mainShell.classList.contains('split-view')) this.buildTranscript(); });
+      document.addEventListener('mouseup', e => this.handleSelection(e));
+      document.getElementById('selbar')?.addEventListener('click', e => this.handleToolbar(e));
+      this.el.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); this.toggleSettings(); });
+      this.el.overlay.addEventListener('click', () => this.toggleSettings(false));
+      document.addEventListener('click', (e) => { if(this.state.settingsOpen && !this.el.settingsPanel.contains(e.target) && e.target !== this.el.settingsBtn) this.toggleSettings(false); });
+      document.querySelectorAll('.settings-option[data-size]').forEach(btn => btn.addEventListener('click',()=>{ document.documentElement.className=`font-${btn.dataset.size}`; this.saveAll(false); }));
+      document.querySelectorAll('.settings-option[data-mode]').forEach(btn => btn.addEventListener('click',()=>{ document.body.classList.toggle('dark-mode', btn.dataset.mode==='dark'); this.saveAll(false); }));
+      
+      // ========== 增强匹配题拖拽逻辑 ==========
+      document.addEventListener('dragstart', (e) => {
+        const opt = e.target.closest('.drag-option');
+        const tag = e.target.closest('.tag');
+        if (opt && !opt.classList.contains('hidden-in-pool')) {
+          this.state.dragSource = { type: 'option', value: opt.dataset.value, text: opt.innerText };
+          e.dataTransfer.setData('text/plain', JSON.stringify({ type:'option', val:opt.dataset.value }));
+          e.dataTransfer.effectAllowed = 'move';
+        } else if (tag) {
+          const slot = tag.closest('.match-slot');
+          if (slot) {
+            this.state.dragSource = { type: 'tag', value: tag.dataset.value, text: tag.innerText, sourceSlot: slot };
+            e.dataTransfer.setData('text/plain', JSON.stringify({ type:'tag', val:tag.dataset.value, slotId: slot.getAttribute('data-q') }));
+            e.dataTransfer.effectAllowed = 'move';
+          }
+        } else return;
+      });
+      document.addEventListener('dragend', () => { this.state.dragSource = null; });
+      document.addEventListener('dragover', (e) => {
+        if (e.target.closest('.match-slot') || e.target.closest('.drag-pool')) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }
+      });
+      document.addEventListener('drop', (e) => {
+        const targetSlot = e.target.closest('.match-slot');
+        const targetPool = e.target.closest('.drag-pool');
+        if (!targetSlot && !targetPool) return;
+        e.preventDefault();
+        if (!this.state.dragSource) return;
+        const src = this.state.dragSource;
+        
+        if (targetPool && src.type === 'tag') {
+          const srcSlot = src.sourceSlot;
+          if (srcSlot && srcSlot.querySelector('.tag') === e.target.closest('.tag')) {
+            const oldTag = srcSlot.querySelector('.tag');
+            if (oldTag) oldTag.remove();
+            srcSlot.classList.remove('filled');
+            this.refreshDragPool();
+            this.updateNavState();
+            this.saveAll(false);
+          }
+          this.state.dragSource = null;
+          return;
+        }
+        
+        if (targetSlot) {
+          const existingTag = targetSlot.querySelector('.tag');
+          if (src.type === 'option') {
+            if (existingTag) {
+              existingTag.remove();
+              targetSlot.classList.remove('filled');
+            }
+            const newTag = this.createTagElement(src.value, src.text);
+            targetSlot.innerHTML = '';
+            targetSlot.appendChild(newTag);
+            targetSlot.classList.add('filled');
+            this.refreshDragPool();
+            this.updateNavState();
+            this.saveAll(false);
+          } 
+          else if (src.type === 'tag') {
+            const srcSlot = src.sourceSlot;
+            if (!srcSlot || srcSlot === targetSlot) return;
+            const srcTag = srcSlot.querySelector('.tag');
+            if (!srcTag) return;
+            if (existingTag) {
+              const targetValue = existingTag.dataset.value;
+              const targetText = existingTag.innerText;
+              const newSrcTag = this.createTagElement(targetValue, targetText);
+              srcSlot.innerHTML = '';
+              srcSlot.appendChild(newSrcTag);
+              srcSlot.classList.add('filled');
+              const newTargetTag = this.createTagElement(src.value, src.text);
+              targetSlot.innerHTML = '';
+              targetSlot.appendChild(newTargetTag);
+              targetSlot.classList.add('filled');
+            } else {
+              const movedTag = srcTag.cloneNode(true);
+              srcSlot.innerHTML = '';
+              srcSlot.classList.remove('filled');
+              targetSlot.innerHTML = '';
+              targetSlot.appendChild(movedTag);
+              targetSlot.classList.add('filled');
+            }
+            this.refreshDragPool();
+            this.updateNavState();
+            this.saveAll(false);
+          }
+        }
+        this.state.dragSource = null;
+      });
+    },
+    createTagElement(value, text) {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.setAttribute('draggable', 'true');
+      span.setAttribute('data-value', value);
+      span.innerText = text;
+      return span;
+    },
+    refreshDragPool() {
+      const usedValues = new Set();
+      document.querySelectorAll('.match-slot .tag').forEach(tag => {
+        if (tag.dataset.value) usedValues.add(tag.dataset.value);
+      });
+      document.querySelectorAll('.drag-option').forEach(opt => {
+        const pool = opt.closest('.drag-pool');
+        const isReusable = pool && pool.dataset.reusable === 'true';
+        if (!isReusable) {
+          const val = opt.dataset.value;
+          if (usedValues.has(val)) opt.classList.add('hidden-in-pool');
+          else opt.classList.remove('hidden-in-pool');
+        } else {
+          opt.classList.remove('hidden-in-pool'); // 支持复用的词库，选项永远不隐藏
+        }
+      });
+      document.querySelectorAll('.match-slot').forEach(slot => {
+        if (slot.querySelector('.tag')) slot.classList.add('filled');
+        else slot.classList.remove('filled');
+      });
+    },
+    attachMultiLimit(){
+      const group = document.querySelector('.group[data-limit="2"]');
+      if(group) group.addEventListener('change',()=>{ let limit=2, checked=[...group.querySelectorAll('input:checked')]; checked.forEach(c=>c.disabled=false); if(checked.length>=limit) group.querySelectorAll('input:not(:checked)').forEach(i=>i.disabled=true); else group.querySelectorAll('input').forEach(i=>i.disabled=false); });
+    },
+    handleSelection(e){ 
+      if(e.target.closest('#selbar, #notes, .bottom-bar')) return;
+      const sel = window.getSelection();
+      const clickedHL = e.target.closest('.hl-brown, .hl-rose, .hl-blue');
+      const bar = document.getElementById('selbar');
+      if(clickedHL && sel.isCollapsed){ bar.targetElem = clickedHL; bar.hidden=false; const rect=clickedHL.getBoundingClientRect(); bar.style.left=`${window.scrollX+rect.left+rect.width/2-70}px`; bar.style.top=`${window.scrollY+rect.top-40}px`; }
+      else if(sel && !sel.isCollapsed){ bar.targetElem=null; bar.hidden=false; const rect=sel.getRangeAt(0).getBoundingClientRect(); bar.style.left=`${window.scrollX+rect.left+rect.width/2-70}px`; bar.style.top=`${window.scrollY+rect.top-40}px`; }
+      else bar.hidden=true;
+    },
+    handleToolbar(e){ 
+      const act=e.target.closest('button')?.dataset.act; const bar=document.getElementById('selbar'); let targetSpan=bar.targetElem; const sel=window.getSelection();
+      if(act === 'hl'){
+        if(targetSpan){
+          if(targetSpan.classList.contains('hl-brown')) targetSpan.className = 'hl-rose';
+          else if(targetSpan.classList.contains('hl-rose')) {}
+          else if(targetSpan.classList.contains('hl-blue')) targetSpan.className = 'hl-brown';
+        } else if(!sel.isCollapsed){ this.wrapSelection('hl-brown'); }
+      } else if(act === 'note'){
+        let span = targetSpan;
+        if(!span && !sel.isCollapsed) span = this.wrapSelection('hl-blue');
+        if(span) { span.className = 'hl-blue'; if(!span.dataset.hid) span.dataset.hid = `n_${Date.now()}`; this.createNoteCard(span); }
+      } else if(act === 'del' && targetSpan) this.unwrapHighlight(targetSpan);
+      bar.hidden=true; window.getSelection().removeAllRanges();
+    },
+    wrapSelection(className){ const s=window.getSelection(); if(s.isCollapsed) return null; const r=s.getRangeAt(0); const span=document.createElement('span'); span.className=className; try{ r.surroundContents(span); } catch(e){ span.appendChild(r.extractContents()); r.insertNode(span); } return span; },
+    unwrapHighlight(el){ if(el && el.parentNode){ const parent=el.parentNode; while(el.firstChild) parent.insertBefore(el.firstChild, el); parent.removeChild(el); parent.normalize(); } },
+    createNoteCard(span){ const hid=span.dataset.hid; if(document.querySelector(`.note-card[data-hid="${hid}"]`)) return; const card=document.createElement('div'); card.className='note-card'; card.dataset.hid=hid; card.innerHTML=`<div class="note-quote">${span.innerText.slice(0,100)}</div><textarea placeholder="Write note here..."></textarea><div class="note-actions"><button class="del-note-btn">Delete</button></div>`; card.querySelector('.del-note-btn').onclick=()=>{ this.unwrapHighlight(span); card.remove(); }; this.el.notesList.prepend(card); document.body.classList.add('notes-open'); },
+    buildNav(){ CONFIG.questionIds.forEach(id=>{ const btn=document.createElement('div'); btn.className='q-nav-item'; btn.innerText=id; btn.dataset.q=id; btn.onclick=()=>{ const first=id.split('-')[0]; const inp=document.querySelector(`[name="q${first}"], .match-slot[data-q="${first}"], .group[id*="${first}"]`); if(inp) inp.closest('.group')?.scrollIntoView({behavior:'smooth',block:'center'}); }; this.el.qNav.appendChild(btn); }); },
+    updateNavState(){ 
+      CONFIG.questionIds.forEach(id=>{ 
+        const nav=this.el.qNav.querySelector(`[data-q="${id}"]`); 
+        if(!nav) return; 
+        let answered=false; 
+        if(id === '13' || id === '14') answered=!!document.querySelector(`[name="q${id}"]`)?.value.trim(); 
+        else if(id==='15' || id==='16' || id==='17' || id==='18') answered=!!document.querySelector(`.match-slot[data-q="${id}"] .tag`);
+        else if(id==='19-20') answered=document.querySelectorAll(`[name="q19_20"]:checked`).length>0; 
+        else answered=!!document.querySelector(`[name="q${id}"]:checked`); 
+        nav.classList.toggle('answered',answered); 
+      }); 
+    },
+    saveAll(showToast=true){ const data={ timer:this.state.timerSecs, settings:{ fontSize:document.documentElement.className, darkMode:document.body.classList.contains('dark-mode') }, notesHTML:this.el.notesList.innerHTML, testHTML:document.getElementById('test-pages-container').innerHTML }; localStorage.setItem(CONFIG.localStorageKey,JSON.stringify(data)); if(showToast) this.showToast('Progress saved!'); },
+    loadFromStorage(){ const raw=localStorage.getItem(CONFIG.localStorageKey); if(!raw) return; try{ const d=JSON.parse(raw); if(d.testHTML) document.getElementById('test-pages-container').innerHTML=d.testHTML; if(d.notesHTML) this.el.notesList.innerHTML=d.notesHTML; if(d.timer) this.state.timerSecs=d.timer; this.updateTimerUI(); if(d.settings){ document.documentElement.className=d.settings.fontSize||'font-regular'; document.body.classList.toggle('dark-mode',d.settings.darkMode); } this.updateNavState(); this.attachMultiLimit(); this.refreshDragPool(); }catch(e){} },
+    toggleFinishMode(){ if(this.state.isReviewing) this.returnToTestMode(); else if(confirm('Submit answers and enter review mode?')) this.enterReviewMode(); },
+    enterReviewMode(){ 
+      this.state.isReviewing=true; 
+      this.el.finishBtn.innerText='Return to Test'; 
+      this.el.mainShell.classList.add('split-view'); 
+      this.buildTranscript(); 
+      this.disableAllInputs(true); 
+      this.generateResultTable(); // 改为仅生成一张大表
+      this.gradeAndMarkNav(); 
+      if(this.state.timerInterval) clearInterval(this.state.timerInterval); 
+    },
+    returnToTestMode(){ 
+      this.state.isReviewing=false; 
+      this.el.finishBtn.innerText='Finish'; 
+      this.el.mainShell.classList.remove('split-view'); 
+      this.disableAllInputs(false); 
+      document.querySelector('.global-results-wrapper')?.remove(); 
+      this.startTimer(); 
+      this.updateNavState(); 
+      this.el.qNav.querySelectorAll('.q-nav-item').forEach(i=>i.classList.remove('correct','incorrect')); 
+    },
+    disableAllInputs(disabled){ 
+      document.querySelectorAll('input, .tag, .drag-option').forEach(el=>{ 
+        if(el.matches('input')) el.disabled=disabled; 
+        if(el.classList?.contains('tag')) el.setAttribute('draggable',!disabled); 
+        if(el.classList?.contains('drag-option')) el.setAttribute('draggable',!disabled); 
+      }); 
+    },
+    gradeAndMarkNav(){ 
+      const key=CONFIG.answerKey; 
+      const norm=s=>String(s??'').trim().toUpperCase(); 
+      CONFIG.questionIds.forEach(id=>{ 
+        let correct=false; 
+        if(key.text[`q${id}`]){ const user=document.querySelector(`[name="q${id}"]`)?.value?.trim()||''; correct=norm(user)===norm(key.text[`q${id}`]); } 
+        else if(key.single[`q${id}`]){ const user=document.querySelector(`[name="q${id}"]:checked`)?.value; correct=norm(user)===norm(key.single[`q${id}`]); } 
+        else if(key.matching[`q${id}`]){ const user=document.querySelector(`.match-slot[data-q="${id}"] .tag`)?.dataset.value; correct=norm(user)===norm(key.matching[`q${id}`]); }
+        else if(id==='19-20'){ const selected=[...document.querySelectorAll(`[name="q19_20"]:checked`)].map(c=>c.value).sort(); const correctArr=key.multiple['19_20'].slice().sort(); correct=selected.length===correctArr.length && selected.every((v,i)=>v===correctArr[i]); } 
+        const nav=this.el.qNav.querySelector(`[data-q="${id}"]`); 
+        if(nav){ nav.classList.remove('answered'); nav.classList.add(correct?'correct':'incorrect'); } 
+      }); 
+    },
+    // 将分散的结果表格整合成底部唯一的汇总成绩单
+    generateResultTable(){ 
+      document.querySelector('.global-results-wrapper')?.remove();
+      let tableHTML = `<div class="global-results-wrapper"><h2>📊 Answer Review</h2><table class="results-table"><thead><tr><th>Question</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>`;
+      const key = CONFIG.answerKey;
+      const norm = s => String(s??'').trim().toUpperCase();
+      
+      CONFIG.questionIds.forEach(q => {
+        let user='—', correct='—', isCorrect=false;
+        if(q === '13' || q === '14'){ 
+          user=document.querySelector(`[name="q${q}"]`)?.value||'—'; 
+          correct=key.text[`q${q}`]; 
+          isCorrect=norm(user)===norm(correct); 
+        }
+        else if(q === '11' || q === '12'){ 
+          user=document.querySelector(`[name="q${q}"]:checked`)?.value||'—'; 
+          correct=key.single[`q${q}`]; 
+          isCorrect=norm(user)===norm(correct); 
+        }
+        else if(q === '15' || q === '16' || q === '17' || q === '18'){ 
+          user=document.querySelector(`.match-slot[data-q="${q}"] .tag`)?.dataset.value||'—'; 
+          correct=key.matching[`q${q}`]; 
+          isCorrect=norm(user)===norm(correct); 
+        }
+        else if(q === '19-20'){ 
+          const selected=[...document.querySelectorAll(`[name="q19_20"]:checked`)].map(c=>c.value).sort(); 
+          user=selected.join(', ')||'—'; 
+          correct=key.multiple['19_20'].join(', '); 
+          isCorrect=selected.length===key.multiple['19_20'].length && selected.every((v,i)=>v===key.multiple['19_20'][i]); 
+        }
+        tableHTML += `<tr><td><b>${q}</b></td><td>${user}</td><td>${correct}</td><td class="${isCorrect?'result-correct':'result-incorrect'}">${isCorrect?'✔ Correct':'✖ Incorrect'}</td></tr>`;
+      });
+      
+      tableHTML += `</tbody></table></div>`;
+      this.el.testContainer.insertAdjacentHTML('beforeend', tableHTML);
+      // 自动滚到成绩单位置
+      setTimeout(() => { document.querySelector('.global-results-wrapper').scrollIntoView({behavior:'smooth'}); }, 100);
+    },
+    buildTranscript(){ const container=document.getElementById('transcript-content'); container.innerHTML = fullTranscriptHTML; document.getElementById('close-transcript-btn')?.addEventListener('click',()=>this.el.mainShell.classList.remove('split-view')); },
+    initAudio(){ const audio=document.querySelector('.listening-audio'); if(!audio) return; const playBtn=document.querySelector('.play-pause-btn'), prog=document.querySelector('.progress-container'), bar=document.querySelector('.progress-bar'), timeSpan=document.querySelector('.time-display'), speed=document.querySelector('.playback-speed'); audio.src='audio.mp3'; let scrubbing=false; const update=()=>{ if(!scrubbing&&audio.duration) bar.style.width=(audio.currentTime/audio.duration)*100+'%'; timeSpan.innerText=`${Math.floor(audio.currentTime/60)}:${String(Math.floor(audio.currentTime%60)).padStart(2,'0')} / ${Math.floor(audio.duration/60)}:${String(Math.floor(audio.duration%60)).padStart(2,'0')}`; }; playBtn.onclick=()=>audio.paused?audio.play():audio.pause(); audio.onplay=()=>playBtn.innerHTML='⏸'; audio.onpause=()=>playBtn.innerHTML='▶'; audio.ontimeupdate=update; speed.onchange=()=>audio.playbackRate=+speed.value; prog.onmousedown=e=>{ scrubbing=true; const rect=prog.getBoundingClientRect(); audio.currentTime=(Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width)))*audio.duration; update(); }; document.onmouseup=()=>scrubbing=false; document.onmousemove=e=>{ if(scrubbing&&audio.duration){ const rect=prog.getBoundingClientRect(); audio.currentTime=(Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width)))*audio.duration; update(); } }; },
+    initSplitter(){ const splitter=document.getElementById('splitter'); let drag=false; splitter.addEventListener('mousedown',()=>{ drag=true; document.body.style.cursor='col-resize'; }); window.addEventListener('mouseup',()=>{ drag=false; document.body.style.cursor=''; }); window.addEventListener('mousemove',e=>{ if(!drag) return; const left=document.getElementById('left-pane'), right=document.getElementById('right-pane'), total=left.parentElement.offsetWidth, newLeft=e.clientX, newRight=total-newLeft-splitter.offsetWidth; if(newLeft>200&&newRight>200){ left.style.flexBasis=`${newLeft}px`; right.style.flexBasis=`${newRight}px`; } }); },
+    startTimer(){ if(this.state.timerInterval) clearInterval(this.state.timerInterval); this.state.timerInterval=setInterval(()=>{ this.state.timerSecs++; this.updateTimerUI(); },1000); },
+    updateTimerUI(){ let m=Math.floor(this.state.timerSecs/60), s=this.state.timerSecs%60; this.el.timerSpan.innerText=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; },
+    toggleSettings(force){ const open=force===undefined?!this.state.settingsOpen:force; this.state.settingsOpen=open; this.el.settingsPanel.style.display=open?'block':'none'; this.el.overlay.style.display=open?'block':'none'; },
+    showToast(msg){ this.el.toast.innerText=msg; this.el.toast.classList.add('show'); setTimeout(()=>this.el.toast.classList.remove('show'),1500); }
+  };
+  document.addEventListener('DOMContentLoaded',()=>App.init());
+})();
+</script>
+</body>
+</html>

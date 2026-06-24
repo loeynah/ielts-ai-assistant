@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-surface: #eef3f9;
+  --color-surface-muted: #f4f7fb;
+  --color-accent: #5b8def;
+  --color-accent-soft: #e8f0fe;
+  --color-beige: #f5f0e8;
+  --color-beige-deep: #ebe4d8;
+  --color-lime: #d4e8a8;
+  --shadow-soft: 0 8px 32px -10px rgb(91 141 239 / 0.1);
+  --shadow-soft-lg: 0 16px 48px -16px rgb(91 141 239 / 0.14);
+  --shadow-chat: 0 4px 24px -4px rgb(15 23 42 / 0.06);
+}
+
+@layer base {
+  html,
+  body,
+  #app {
+    @apply h-full min-h-screen antialiased;
+  }
+
+  body {
+    background: linear-gradient(165deg, #f8fafc 0%, #eef3f9 45%, #f5f0e8 100%);
+    @apply font-sans text-slate-700;
+  }
+
+  * {
+    @apply border-slate-200/50;
+  }
+}
+
+@layer utilities {
+  .soft-card {
+    @apply rounded-[28px] bg-white/95 shadow-[var(--shadow-soft)] backdrop-blur-sm;
+  }
+
+  .soft-card-hover {
+    @apply transition-shadow duration-300 hover:shadow-[var(--shadow-soft-lg)];
+  }
+
+  .chat-console {
+    @apply rounded-[28px] bg-gradient-to-b from-slate-100/90 to-slate-50/95 p-1 shadow-[var(--shadow-chat)] ring-1 ring-slate-200/40;
+  }
+
+  .user-bubble {
+    background: linear-gradient(135deg, #7ba7e8 0%, #9ec5f5 100%);
+    @apply text-white shadow-sm;
+  }
+
+  .ai-bubble {
+    background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%);
+    @apply text-slate-700 shadow-sm ring-1 ring-slate-100/80;
+  }
+}

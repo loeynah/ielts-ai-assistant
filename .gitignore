@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-ssr
+.env
+backend/.env
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json

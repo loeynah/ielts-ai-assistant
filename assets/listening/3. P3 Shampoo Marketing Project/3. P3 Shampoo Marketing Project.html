@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>IELTS Listening Practice - Shampoo Marketing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* --- Global & Layout --- */
+  :root { 
+    --splitter-width: 5px; 
+    --splitter-color: #eaecef; 
+    --bg-color: #f6f7fb;
+    --panel-color: #ffffff;
+    --text-color: #222;
+    --border-color: #eef0f6;
+    --accent-color: #3b82f6;
+    --answered-bg: #e0e7ff;
+    --answered-border: #a5b4fc;
+    --answered-text: #3730a3;
+    --correct-bg: #dcfce7;
+    --correct-border: #4ade80;
+    --correct-text: #15803d;
+    --incorrect-bg: #fee2e2;
+    --incorrect-border: #f87171;
+    --incorrect-text: #b91c1c;
+    --shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  html.font-regular { font-size: 16px; }
+  html.font-large { font-size: 18px; }
+  html.font-xlarge { font-size: 20px; }
+
+  body.dark-mode {
+    --bg-color: #111827;
+    --panel-color: #1f2937;
+    --text-color: #d1d5db;
+    --border-color: #374151;
+    --splitter-color: #374151;
+    --accent-color: #60a5fa;
+    --answered-bg: #312e81;
+    --answered-border: #4f46e5;
+    --answered-text: #c7d2fe;
+    --correct-bg: #14532d;
+    --correct-border: #22c55e;
+    --correct-text: #bbf7d0;
+    --incorrect-bg: #991b1b;
+    --incorrect-border: #ef4444;
+    --incorrect-text: #fecaca;
+  }
+
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body, .shell { background: var(--bg-color); font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; color: var(--text-color); font-size: 1em; font-weight: 400; }
+  .shell { display: flex; flex-direction: column; height: 100vh; }
+  
+  /* --- Header --- */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background: var(--panel-color);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  .header h1 { font-size: 1.2em; font-weight: 500; margin: 0; }
+  .header-controls { display: flex; gap: 10px; }
+  .header-btn {
+    background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; color: var(--text-color);
+  }
+  #settings-panel {
+    position: fixed; top: 65px; right: 20px; width: 220px; background: var(--panel-color);
+    border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--border-color);
+    z-index: 1001; padding: 8px; display: none;
+  }
+  .settings-group { padding: 8px 0; }
+  .settings-title { font-size: 0.8em; color: #6b7280; margin-bottom: 8px; padding: 0 8px; }
+  .settings-options { display: flex; gap: 5px; padding: 0 8px; }
+  .settings-option { flex: 1; text-align: center; padding: 6px 8px; border: 1px solid var(--border-color); background: var(--bg-color); cursor: pointer; font-size: 0.9em; border-radius: 6px; color: var(--text-color); }
+  .settings-option.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+  .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.1); z-index: 1000; display: none; }
+  body.dark-mode .overlay { background: rgba(0,0,0,0.4); }
+
+  /* --- Split Pane & Page Layout --- */
+  #main-shell { display: flex; flex-grow: 1; overflow: hidden; }
+  #left-pane { flex: 1 1 100%; overflow-y: auto; background: var(--panel-color); transition: flex-basis 0.4s ease-in-out; }
+  #splitter { width: var(--splitter-width); background: var(--splitter-color); cursor: col-resize; display: none; }
+  #right-pane { flex: 0 0 0; overflow-y: auto; background: var(--bg-color); display: none; position: relative; }
+  #main-shell.split-view #left-pane { flex-basis: 50%; }
+  #main-shell.split-view #splitter { display: block; }
+  #main-shell.split-view #right-pane { display: block; flex-basis: calc(50% - var(--splitter-width)); padding: 0 24px; }
+
+  /* --- Sticky Header & Audio Player --- */
+  #sticky-header { position: sticky; top: 0; z-index: 10; background: var(--panel-color); padding: 20px 24px 0; }
+  .audio-player-wrapper { border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 10px; }
+  .audio-player { display: flex; align-items: center; gap: 15px; }
+  .play-pause-btn { background: var(--accent-color); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .progress-container { flex-grow: 1; height: 20px; display: flex; align-items: center; cursor: pointer; }
+  .progress-bar-wrapper { width: 100%; height: 8px; background-color: #e0e0e0; border-radius: 4px; position: relative; }
+  body.dark-mode .progress-bar-wrapper { background-color: #4b5563; }
+  .progress-bar { width: 0; height: 100%; background-color: var(--accent-color); border-radius: 4px; }
+  .time-display { font-size: 0.8em; min-width: 90px; text-align: center; }
+  .speed-control select { padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-size: 0.8em; }
+
+  /* --- Content & Bottom Bar --- */
+  #test-pages-container { padding: 0 24px; }
+  .bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; height: 64px; background: var(--panel-color); border-top: 1px solid var(--border-color); box-shadow: 0 -6px 18px rgba(0,0,0,.06); display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 16px; z-index: 100; }
+  .bb-left, .bb-center { display: flex; align-items: center; gap: 12px; }
+  .bb-center button { height: 36px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-color); cursor: pointer; color: var(--text-color); }
+  .q-nav-container { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .q-nav-item { display: flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 5px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); font-size: 0.9em; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+  .q-nav-item.answered { background: var(--answered-bg); border-color: var(--answered-border); color: var(--answered-text); }
+  .q-nav-item.correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+  .q-nav-item.incorrect { background: var(--incorrect-bg); border-color: var(--incorrect-border); color: var(--incorrect-text); }
+
+  /* --- Side Panels (Notes Only) --- */
+  body { transition: padding-right .25s ease; }
+  body.notes-open { padding-right: 420px; }
+  #notes { position: fixed; right: -420px; top: 0; bottom: 64px; width: 420px; background: var(--bg-color); border-left: 1px solid var(--border-color); transition: right .25s ease; z-index: 99; display: flex; flex-direction: column; }
+  body.notes-open #notes { right: 0; }
+  .side-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border-color); background: var(--panel-color); flex-shrink: 0; }
+  .side-panel-header span { font-weight: 500; }
+  .side-panel-close { background: transparent; border: none; font-size: 1.5em; font-weight: 300; cursor: pointer; color: var(--text-color); }
+  #notes-list { overflow-y: auto; padding: 12px; flex-grow: 1; }
+
+  /* --- Note Cards & Highlighter --- */
+  .note-card { 
+    background: var(--panel-color); 
+    border-radius: 10px; 
+    padding: 12px; 
+    margin: 0 0 10px; 
+    border: 1px solid var(--border-color); 
+  }
+  .note-quote {
+    font-weight: 500;
+    font-size: 1.1em;
+    margin-bottom: 12px;
+  }
+  .note-actions { 
+    margin-top: 8px; 
+  }
+  .note-actions button[data-act="del-note"] { 
+    border: 1px solid var(--incorrect-border); 
+    background: transparent;
+    border-radius: 8px; 
+    padding: 6px 12px; 
+    cursor: pointer; 
+    color: var(--incorrect-text);
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+  .note-card textarea { 
+    width: 100%; 
+    min-height: 64px; 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    padding: 8px; 
+    box-sizing: border-box; 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    font-size: 1em;
+  }
+
+  .hl { background: #fff59d; }
+  body.dark-mode .hl { background: #a16207; }
+  .hl-blue { background: #CEDDFE; cursor: pointer; }
+  body.dark-mode .hl-blue { background: #312e81; }
+  #selbar { position: absolute; background: #ffffff; color: #333; border: 1px solid #ccc; border-radius: 10px; box-shadow: var(--shadow); padding: 6px; gap: 6px; display: inline-flex; z-index: 101; }
+  #selbar[hidden] { display: none; }
+  #selbar button { border: 1px solid #ccc; border-radius: 8px; padding: 4px 8px; background: #f0f0f0; color: #333; cursor: pointer; }
+  body.dark-mode #selbar { background: #f9fafb; color: #1f2937; border: 1px solid #9ca3af; }
+  body.dark-mode #selbar button { background: #e5e7eb; color: #1f2937; border: 1px solid #9ca3af; }
+
+  /* --- General Question Styles --- */
+  .group { border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin: 24px 0; }
+  .test-title, .group h4, .test-main-title { margin: 0 0 12px; font-size: 1.1em; color: var(--text-color); font-weight: 500; }
+  .test-main-title { text-align: center; font-size: 1.5em; margin-bottom: 24px; }
+  .group .instructions { margin-bottom: 16px; background: var(--bg-color); padding: 10px; border-radius: 8px; font-weight: 400; }
+  .group p, .group li, .group label { line-height: 2; }
+  b, strong { font-weight: 500; }
+  label { display: block; cursor: pointer; }
+
+  /* --- Radio & Checkbox Styles --- */
+  input[type="radio"], input[type="checkbox"] { margin-right: 10px; }
+  .radio-option, .checkbox-option { display: flex; align-items: center; margin-bottom: 8px; }
+  .radio-option b, .checkbox-option b { font-weight: 500; margin-right: 5px; }
+
+  /* --- Matching Questions --- */
+  .match-row { display: flex; align-items: center; gap: 10px; line-height: 1.8; }
+  .match-q b { font-weight: 500; }
+  .match-slot { min-width: 80px; min-height: 12px; padding: 4px 10px; border-radius: 8px; border: 1px dashed #D1D9F0; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 1em; color: #8AA2C1; transition: background-color .2s, border-color .2s; vertical-align: middle; }
+  .match-slot.drag-over { border-color: #6F86FF; background: #F2F6FF; }
+  .match-slot.filled { border-color: transparent; background: transparent; padding: 0; }
+  .match-slot::before { content: attr(data-q); color: #8AA2C1; }
+  .match-slot.filled::before { content: ''; }
+  .tag { display: inline-flex; align-items: center; padding: 4px 10px; border: 1px solid #b9c2e1; background: #f8f9ff; border-radius: 8px; cursor: grab; user-select: none; font-weight: 500; color:#2a2f45; }
+  .tag.dragging { opacity: .6; }
+  .drag-pool { background: #F5F6F8; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .drag-option { background: #fff; border: 1px solid #D7DEEA; border-radius: 6px; padding: 6px 12px; cursor: grab; user-select: none; }
+  .drag-option.dragging { opacity: .5; }
+  .drag-option.hidden-in-pool { display: none !important; }
+  .drag-pool.drag-over { outline: 2px dashed #8fb1ff; outline-offset: 4px; }
+
+  /* --- Matching Layout using CSS Grid --- */
+  .matching-flex {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    gap: 30px;
+  }
+  .matching-flex > * {
+    flex: none !important;
+    width: auto !important;
+  }
+
+  /* --- Post-Submission Results & Transcript --- */
+  .results-in-page { margin-top: 30px; border-top: 2px solid var(--border-color); padding-top: 20px; }
+  .results-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9em; }
+  .results-table th, .results-table td { border: 1px solid var(--border-color); padding: 8px 12px; text-align: left; }
+  .results-table th { background: var(--bg-color); font-weight: 500; }
+  .result-correct { color: var(--correct-text); font-weight: 500; }
+  .result-incorrect { color: var(--incorrect-text); font-weight: 500; }
+  
+  #transcript-content { position: relative; }
+  #transcript-content h4 { font-weight: 500; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin: 24px 0 16px 0; font-size: 1.2em; }
+  #transcript-content p { margin-bottom: 0.5em; line-height: 1.7; font-weight: 400; }
+  .answer-highlight { background-color: #dbeafe; padding: 2px 5px; border-radius: 4px; border-bottom: 2px solid #93c5fd; }
+  body.dark-mode .answer-highlight { background-color: #1e3a8a; }
+  .t-line { padding:2px 6px; border-radius:6px; transition: background-color 0.2s; }
+  #close-transcript-btn { position: absolute; top: 24px; right: 10px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; font-size: 1.2em; cursor: pointer; z-index: 5; }
+  
+  /* --- Save Toast Notification --- */
+  #toast { position: fixed; right: 20px; bottom: 84px; background: #26a269; color: #fff; padding: 10px 14px; border-radius: 8px; box-shadow: var(--shadow); font-size: 0.9em; z-index: 200; opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .2s ease, transform .2s ease; }
+  #toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body class="font-regular">
+
+<div class="shell">
+  <header class="header">
+    <h1>IELTS Listening Practice</h1>
+    <div class="header-controls">
+        <button id="settings-btn" class="header-btn">Text Size/Color</button>
+    </div>
+  </header>
+
+  <div id="settings-panel">
+    <div class="settings-group">
+        <div class="settings-title">Font Size</div>
+        <div class="settings-options">
+            <button class="settings-option active" data-size="regular">Regular</button>
+            <button class="settings-option" data-size="large">Large</button>
+            <button class="settings-option" data-size="xlarge">X-Large</button>
+        </div>
+    </div>
+    <div class="settings-group">
+        <div class="settings-title">Color Mode</div>
+        <div class="settings-options">
+            <button class="settings-option active" data-mode="light">Light</button>
+            <button class="settings-option" data-mode="dark">Dark</button>
+        </div>
+    </div>
+  </div>
+  <div class="overlay"></div>
+
+  <div id="main-shell">
+    <div id="left-pane">
+      <div id="sticky-header">
+        <div class="audio-player-wrapper" id="audio-player-container"></div>
+      </div>
+      <div id="test-pages-container"></div>
+    </div>
+    <div id="splitter"></div>
+    <div id="right-pane">
+      <div id="transcript-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bb-left">
+    <div id="q-nav-container" class="q-nav-container"></div>
+  </div>
+  <div class="bb-center">
+    <span id="timer">00:00</span>
+    <button id="finish-btn" type="button">Finish</button>
+    <button id="save-btn" type="button">Save</button>
+    <button id="clear-btn" type="button">Clear</button>
+    <button id="toggle-notes-btn" type="button">Notes</button>
+    <button id="toggle-transcript-btn" type="button">Transcript</button>
+  </div>
+</div>
+
+<div id="notes" aria-hidden="true"><div class="side-panel-header"><span>My Notes</span><button id="notes-close" type="button" class="side-panel-close">&times;</button></div><div id="notes-list"></div></div>
+<div id="selbar" hidden>
+    <button data-act="hl">Highlight</button>
+    <button data-act="note">Note</button>
+    <button data-act="del">Clear</button>
+</div>
+<div id="toast" role="status" aria-live="polite">Progress saved!</div>
+
+<script id="task-configuration">
+const CONFIG_DATA = {
+  localStorageKey: 'ieltsListening_shampoo_v1',
+  questionList: ['21','22','23','24','25','26','27','28','29','30'],
+  answerKey: {
+    single: { 
+      'q21': 'C', 
+      'q22': 'A', 
+      'q23': 'C', 
+      'q24': 'B', 
+      'q25': 'B', 
+      'q26': 'C'
+    },
+    matching: { 
+      'q27': 'B', 
+      'q28': 'F', 
+      'q29': 'E', 
+      'q30': 'A' 
+    }
+  },
+  transcriptLines: [
+    ["00:00", "00:12", "Business students called Janet and Michael, discussing their research into the marketing of different kinds of shampoo."],
+    ["00:12", "00:16", "First you have some time to look at questions 21 to 26."],
+    ["00:16", "00:28", "Now listen carefully and answer questions 21 to 26."],
+    ["00:28", "00:33", "Hi Janet, how are you getting on with the shampoo marketing project?"],
+    ["00:33", "00:36", "Hi Michael, it's interesting."],
+    ["00:36", "00:42", "I've read how shampoo marketing has developed over the last hundred years."],
+    ["00:42", "00:46", "Oh, I didn't think we needed to do that."],
+    ["00:46", "00:49", "True, but I'm interested anyway."],
+    ["00:49", "00:55", "Basically, what was once sold as an economical way of getting your hair clean has evolved into a beauty product. <span class='answer-highlight'>(Q21: C - a different kind of commodity)</span>"],
+    ["00:55", "01:02", "And shampoo is interesting because it's a key influence in how we see ourselves."],
+    ["01:02", "01:06", "You've heard of bad hair days."],
+    ["01:06", "01:10", "When your hair looks bad, maybe you didn't wash it and you feel bad about it."],
+    ["01:10", "01:12", "You heard of them?"],
+    ["01:12", "01:13", "Yes."],
+    ["01:13", "01:14", "Had one?"],
+    ["01:14", "01:15", "No."],
+    ["01:15", "01:17", "Don't think they're real."],
+    ["01:17", "01:19", "Bad hair days?"],
+    ["01:19", "01:20", "Come on."],
+    ["01:20", "01:26", "Well, whatever you want to call them, that's not what research from Yale is suggesting."],
+    ["01:26", "01:31", "They're not just imagined and both sexes are equally affected by them. <span class='answer-highlight'>(Q22: A - They really do exist)</span>"],
+    ["01:31", "01:36", "And when they happen, people tend to perform and feel worse than usual."],
+    ["01:36", "01:37", "Right."],
+    ["01:37", "01:44", "And I've been reading about shampoo ingredients, chemicals like sodium laurel sulfate, methyl chloride."],
+    ["01:44", "01:50", "Many of the manufacturers tend to use these or others like them, though they keep it quiet. <span class='answer-highlight'>(Q23: C - The presence of the chemicals is rarely publicised)</span>"],
+    ["01:50", "01:55", "When it comes to the product packaging, they're strangely silent about it."],
+    ["01:55", "02:00", "Another area it would be interesting to investigate is the labeling on bottles."],
+    ["02:00", "02:07", "Apparently, printing directly onto the bottles costs about 50% less than sticking a printed label on because it's a much quicker process."],
+    ["02:07", "02:14", "But manufacturers are lukewarm about this because it doesn't enhance the visual impact of the bottle."],
+    ["02:14", "02:17", "It comes across as a bit cheap. <span class='answer-highlight'>(Q24: B - looks less attractive)</span>"],
+    ["02:17", "02:22", "We need to think about environmental issues."],
+    ["02:22", "02:28", "I was surprised how little recycled plastic goes into the bottles."],
+    ["02:28", "02:33", "I think it's because light colored plastic is more difficult to make from recycled stuff."],
+    ["02:33", "02:38", "Yeah, but manufacturers can make their packaging more environmentally friendly just by making it less heavy."],
+    ["02:38", "02:44", "I'd like to find out whether some of them actually do when we do the research. <span class='answer-highlight'>(Q25: B - variations in the weight of shampoo bottles)</span>"],
+    ["02:44", "02:47", "Yes, that's worth looking into."],
+    ["02:47", "02:53", "Thinking about you as a customer, what's important when choosing shampoo?"],
+    ["02:53", "02:58", "I'm always wary of special offers."],
+    ["02:58", "03:03", "When something's flagged as being half price, it rarely is, really."],
+    ["03:03", "03:10", "But if there's a make I've never seen before, I'm usually up for giving it a go rather than sticking to one or two favorite brands all my life. <span class='answer-highlight'>(Q26: C - willingness to try new products)</span>"],
+    ["03:10", "03:15", "Interesting."],
+    ["03:15", "03:20", "Before you hear the rest of the discussion, you have some time to look at questions 27 to 30."],
+    ["03:45", "04:00", "Now listen and answer questions 27 to 30."],
+    ["04:00", "04:08", "Shall we discuss some of these shampoo advertisements then and try and identify what sort of psychological response each one is trying to get from the viewer?"],
+    ["04:08", "04:11", "Okay."],
+    ["04:11", "04:13", "What about Zing?"],
+    ["04:13", "04:18", "Well, it would probably appeal equally to men and women."],
+    ["04:18", "04:26", "In the ad we see this happy family, lovely home, healthy, good looking children with clean hair."],
+    ["04:26", "04:28", "Obviously, yes."],
+    ["04:28", "04:36", "And I think we're supposed to watch the ad and think, wow, if only my life was like that. <span class='answer-highlight'>(Q27: B - enviable lifestyle)</span>"],
+    ["04:36", "04:39", "Yeah, I know what you mean."],
+    ["04:39", "04:44", "I think the advertisers want the viewers to almost wish they were the people in the ad."],
+    ["04:44", "04:45", "Sure."],
+    ["04:45", "04:48", "I mean, that's very common in advertising."],
+    ["04:48", "04:51", "But not universal."],
+    ["04:51", "04:57", "You know that ad for splash shampoo that lasts about five minutes and where there's a story?"],
+    ["04:57", "05:02", "Oh, yes, the commercial about the couple and all through the commercial."],
+    ["05:02", "05:06", "It's not clear if they're going to break up or stay together."],
+    ["05:06", "05:07", "Exactly."],
+    ["05:07", "05:12", "Well, I think the marketing has been done very cleverly there."],
+    ["05:12", "05:17", "I don't think we're supposed to want to be the characters in the commercial, but we're supposed to get to know them a bit."],
+    ["05:17", "05:18", "Yes."],
+    ["05:18", "05:22", "Well, I thought the story was effective."],
+    ["05:22", "05:27", "You're glad to learn when it's over that they're obviously going to stay together."],
+    ["05:27", "05:33", "But I think the role of the shampoo and the story was a bit thin to say the least. <span class='answer-highlight'>(Q28: F - romantic interest)</span>"],
+    ["05:33", "05:34", "Hmm."],
+    ["05:34", "05:35", "Maybe."],
+    ["05:35", "05:40", "I suppose some manufacturers don't want to bore people with all the science."],
+    ["05:40", "05:41", "Sure."],
+    ["05:41", "05:45", "And then there's the just-go advertisement."],
+    ["05:45", "05:46", "Yes."],
+    ["05:46", "05:52", "That had lots of technical information about what the shampoo actually consists of."],
+    ["05:52", "05:58", "I suppose they want customers to feel confident that when they buy just-go, they're at least making an informed decision. <span class='answer-highlight'>(Q29: E - product reliability)</span>"],
+    ["05:58", "06:00", "Yes."],
+    ["06:00", "06:04", "They're buying something that will do the job they want it to."],
+    ["06:04", "06:05", "That's it."],
+    ["06:05", "06:11", "I've read one of the most effective shampoo ads in recent times was the one for brosine."],
+    ["06:11", "06:18", "Yes, but there's no commentary, just images of the shampoo and lots of clean hair."],
+    ["06:18", "06:24", "I suppose the effect, though, is very calming with soft music and very peaceful imagery. <span class='answer-highlight'>(Q30: A - link to relaxation)</span>"],
+    ["06:24", "06:29", "Yes, but at the end of the ad, we've hardly learned anything about it."],
+    ["06:29", "06:31", "About the product, have we?"],
+    ["06:31", "06:33", "I suppose not."],
+    ["06:33", "06:39", "But isn't it interesting how much the ads for what are essentially very similar products vary so much?"],
+    ["06:39", "06:42", "That is the end of part three."],
+    ["07:12", "07:18", "You now have 30 seconds to check your answers to part three."],
+    ["07:48", "07:52", "Yes. Thank you."]
+  ]
+};
+</script>
+
+<script>
+(function() {
+'use strict';
+
+const App = {
+    init() {
+        this.config = CONFIG_DATA;
+        this.state = { timerSecs:0, timerInterval:null, isReviewing: false, settingsOpen: false, currentDragData:null, draggingEl:null };
+        this.buildLayout();
+        this.cacheElements();
+        this.bindEvents();
+        this.loadState();
+        this.AudioPlayer.init();
+        this.Splitter.init();
+        this.applySafeArea();
+        this.startTimer();
+        this.buildQuestionNav();
+        this.updateNavState();
+    },
+
+    buildLayout() {
+        const audioContainer = document.getElementById('audio-player-container');
+        const pagesContainer = document.getElementById('test-pages-container');
+        const transcriptContainer = document.getElementById('transcript-content');
+        
+        audioContainer.innerHTML = this.Templates.audioPlayer();
+        pagesContainer.innerHTML = this.Templates.questionsPage();
+        transcriptContainer.innerHTML = this.Templates.transcriptPage();
+    },
+
+    cacheElements() {
+        const $ = s => document.querySelector(s);
+        this.el = {
+            mainShell: $('#main-shell'), leftPane: $('#left-pane'), testPagesContainer: $('#test-pages-container'),
+            transcriptContent: $('#transcript-content'), notesList: $('#notes-list'),
+            bottomBar: $('.bottom-bar'), timer: $('#timer'), finishBtn: $('#finish-btn'),
+            saveBtn: $('#save-btn'), clearBtn: $('#clear-btn'), toggleNotesBtn: $('#toggle-notes-btn'), toggleTranscriptBtn: $('#toggle-transcript-btn'),
+            notes: $('#notes'), notesCloseBtn: $('#notes-close'), selbar: $('#selbar'), 
+            allPanes: [$('#left-pane'), $('#right-pane'), $('#notes')],
+            toast: $('#toast'),
+            settingsBtn: $('#settings-btn'), settingsPanel: $('#settings-panel'), overlay: $('.overlay'),
+            qNavContainer: $('#q-nav-container')
+        };
+    },
+    
+    bindEvents() {
+        document.addEventListener('input', e => this.handleFormChange(e));
+        window.addEventListener('resize', () => this.applySafeArea());
+        this.el.allPanes.forEach(p => p.addEventListener('scroll', () => this.highlighter.hideSelbar()));
+        this.el.finishBtn.addEventListener('click', () => this.toggleFinishMode());
+        this.el.saveBtn.addEventListener('click', () => this.saveState());
+        this.el.clearBtn.addEventListener('click', () => this.clearAll());
+        this.el.toggleNotesBtn.addEventListener('click', () => this.notes.toggle(true));
+        this.el.toggleTranscriptBtn.addEventListener('click', () => {
+            this.el.mainShell.classList.toggle('split-view');
+            this.Transcript.buildOnce();
+        });
+        this.el.notesCloseBtn.addEventListener('click', () => this.notes.toggle(false));
+        document.addEventListener('mouseup', e => this.highlighter.handleMouseUp(e));
+        this.el.selbar.addEventListener('click', e => this.highlighter.handleAction(e));
+        
+        // Settings Panel Events
+        this.el.settingsBtn.addEventListener('click', e => { e.stopPropagation(); this.toggleSettingsPanel(); });
+        this.el.overlay.addEventListener('click', () => this.toggleSettingsPanel(false));
+        document.addEventListener('click', e => { if (this.state.settingsOpen && !this.el.settingsPanel.contains(e.target) && !this.el.settingsBtn.contains(e.target)) this.toggleSettingsPanel(false); });
+        this.el.settingsPanel.querySelectorAll('.settings-option[data-size]').forEach(btn => btn.addEventListener('click', () => { document.documentElement.className = `font-${btn.dataset.size}`; this.el.settingsPanel.querySelectorAll('.settings-option[data-size]').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }));
+        this.el.settingsPanel.querySelectorAll('.settings-option[data-mode]').forEach(btn => btn.addEventListener('click', () => { document.body.classList.toggle('dark-mode', btn.dataset.mode === 'dark'); this.el.settingsPanel.querySelectorAll('.settings-option[data-mode]').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }));
+        
+        // Drag and Drop Events
+        document.addEventListener('dragstart', e => this.dnd.handleDragStart(e)); document.addEventListener('dragend', e => this.dnd.handleDragEnd(e));
+        document.addEventListener('dragover', e => this.dnd.handleDragOver(e)); document.addEventListener('dragleave', e => this.dnd.handleDragLeave(e));
+        document.addEventListener('drop', e => this.dnd.handleDrop(e));
+    },
+
+    applySafeArea() {
+        const h = this.el.bottomBar.offsetHeight;
+        this.el.allPanes.forEach(p => p.style.bottom = p.matches('#notes') ? `${h}px` : 'auto');
+        this.el.leftPane.style.paddingBottom = `${h + 20}px`;
+    },
+
+    startTimer() { this.state.timerInterval = setInterval(() => this.tick(), 1000); },
+    tick() { this.state.timerSecs++; this.updateTimerUI(); },
+    updateTimerUI() { const m = String(Math.floor(this.state.timerSecs / 60)).padStart(2, '0'), s = String(this.state.timerSecs % 60).padStart(2, '0'); this.el.timer.textContent = `${m}:${s}`; },
+    
+    handleFormChange(e) {
+        if (e.target.matches('input, textarea, select')) {
+            this.updateNavState();
+        }
+    },
+    
+    toggleSettingsPanel(forceOpen) {
+        const open = forceOpen === undefined ? !this.state.settingsOpen : forceOpen;
+        this.state.settingsOpen = open;
+        this.el.settingsPanel.style.display = open ? 'block' : 'none';
+        this.el.overlay.style.display = open ? 'block' : 'none';
+    },
+
+    notes: {
+        toggle(forceOpen) { const open = forceOpen === undefined ? !document.body.classList.contains('notes-open') : forceOpen; document.body.classList.toggle('notes-open', open); },
+        create(targetSpan) {
+            if (!targetSpan) return; 
+            const hid = targetSpan.dataset.hid || `h_${Date.now()}`; 
+            targetSpan.dataset.hid = hid;
+            
+            const existed = App.el.notesList.querySelector(`.note-card[data-hid="${hid}"]`); 
+            if (existed) { 
+                App.notes.toggle(true); 
+                existed.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+                return; 
+            }
+
+            const text = (targetSpan.textContent || '').trim(); 
+            const card = document.createElement('div'); 
+            card.className = 'note-card'; 
+            card.dataset.hid = hid;
+            
+            const quoteDiv = document.createElement('div');
+            quoteDiv.className = 'note-quote';
+            quoteDiv.innerHTML = escapeHtml(text) || '(no text selected)';
+
+            const textarea = document.createElement('textarea');
+            textarea.placeholder = "Write note here...";
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'note-actions';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.dataset.act = 'del-note';
+            deleteBtn.textContent = 'Delete';
+
+            // Attach delete logic directly
+            deleteBtn.onclick = () => {
+                const originalHighlight = document.querySelector(`[data-hid="${hid}"]`);
+                if (originalHighlight) {
+                    App.highlighter.unWrap(originalHighlight);
+                }
+                card.remove();
+            };
+
+            actionsDiv.appendChild(deleteBtn);
+            card.append(quoteDiv, textarea, actionsDiv);
+            App.el.notesList.prepend(card); 
+            App.notes.toggle(true);
+        }
+    },
+
+    highlighter: {
+        unWrap(el) { if (el && el.parentNode) { const p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); p.normalize(); } },
+        hideSelbar() { if (App.el && App.el.selbar) { App.el.selbar.hidden = true; App.el.selbar.style.transform = ''; } },
+        positionToolbar(rect, w) { let left = rect.left + rect.width / 2 - w / 2; App.el.selbar.style.left = `${window.scrollX + left}px`; App.el.selbar.style.top = `${window.scrollY + rect.top}px`; App.el.selbar.style.transform = 'translateY(-100%) translateY(-8px)'; },
+        handleMouseUp(e) {
+            if (e.target.closest('#selbar, #notes, .bottom-bar')) return;
+            const clickedHl = e.target.closest('.hl,.hl-blue');
+            const s = window.getSelection();
+            App.el.selbar.targetElement = null;
+            if (clickedHl && s.isCollapsed) {
+                s.removeAllRanges();
+                App.el.selbar.querySelector('[data-act="hl"]').hidden = true;
+                App.el.selbar.querySelector('[data-act="note"]').hidden = false;
+                App.el.selbar.querySelector('[data-act="del"]').hidden = false;
+                App.el.selbar.hidden = false;
+                this.positionToolbar(clickedHl.getBoundingClientRect(), App.el.selbar.offsetWidth);
+                App.el.selbar.targetElement = clickedHl;
+            } else if (s && !s.isCollapsed) {
+                const rect = s.getRangeAt(0).getBoundingClientRect();
+                if (!rect || (!rect.width && !rect.height)) return this.hideSelbar();
+                App.el.selbar.querySelector('[data-act="hl"]').hidden = false;
+                App.el.selbar.querySelector('[data-act="note"]').hidden = false;
+                App.el.selbar.querySelector('[data-act="del"]').hidden = true;
+                App.el.selbar.hidden = false;
+                this.positionToolbar(rect, App.el.selbar.offsetWidth);
+            } else {
+                this.hideSelbar();
+            }
+        },
+        handleAction(e) {
+            const act = e.target.closest('button')?.dataset.act;
+            if (!act) return;
+            if (act === 'hl' || act === 'note') {
+                const s = window.getSelection();
+                if (!s || s.isCollapsed) return;
+                const r = s.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = act === 'hl' ? 'hl' : 'hl-blue';
+                try { r.surroundContents(span); } catch { span.appendChild(r.extractContents()); r.insertNode(span); }
+                if (act === 'note') { span.dataset.hid = `h_${Date.now()}`; App.notes.create(span); }
+            } else if (act === 'del' && App.el.selbar.targetElement) {
+                this.unWrap(App.el.selbar.targetElement);
+            }
+            this.hideSelbar();
+        }
+    },
+    
+    dnd: {
+        getData(el){ if (!el) return null; if (el.classList.contains('drag-option')) return { type: 'pool', code: el.dataset.value, label: el.textContent.trim(), sourceEl: el }; if (el.classList.contains('tag')) return { type: 'tag', code: el.dataset.value, label: el.textContent.trim(), sourceEl: el }; return null; },
+        handleDragStart(e){ const el = e.target.closest('.drag-option, .tag'); if (!el) return; const data = App.state.currentDragData = this.getData(el); App.state.draggingEl = el; el.classList.add('dragging'); e.dataTransfer.setData('text/plain', JSON.stringify({ code: data.code, label: data.label, kind: 'match' })); e.dataTransfer.effectAllowed = 'move'; },
+        handleDragEnd(){ if (App.state.draggingEl) App.state.draggingEl.classList.remove('dragging'); App.state.draggingEl = null; App.state.currentDragData = null; },
+        handleDragOver(e){ const slot = e.target.closest('.match-slot'); const pool = e.target.closest('.drag-pool'); if (slot || pool) { e.preventDefault(); (slot || pool).classList.add('drag-over'); } },
+        handleDragLeave(e){ e.target.closest('.match-slot')?.classList.remove('drag-over'); e.target.closest('.drag-pool')?.classList.remove('drag-over'); },
+        handleDrop(e){ const slot = e.target.closest('.match-slot'); const pool = e.target.closest('.drag-pool'); const draggingData = App.state.currentDragData; const payload = JSON.parse(e.dataTransfer.getData('text/plain') || '{}'); const code = payload.code || draggingData?.code; const label = payload.label || draggingData?.label; if (!code) return; if (pool) { e.preventDefault(); pool.classList.remove('drag-over'); if (draggingData?.type === 'tag') { const srcSlot = draggingData.sourceEl.closest('.match-slot'); App.dnd.clearSlot(srcSlot); } App.dnd.showOptionInPool(pool.closest('.group'), code, true); App.updateNavState(); return; } if (slot) { e.preventDefault(); slot.classList.remove('drag-over'); const group = slot.closest('.group'); const poolEl = group.querySelector('.drag-pool'); const reusable = (poolEl.dataset.reusable === 'true'); const oldTag = slot.querySelector('.tag'); if (oldTag) { App.dnd.showOptionInPool(group, oldTag.dataset.value, true); App.dnd.clearSlot(slot); } if (draggingData?.type === 'tag') { const fromSlot = draggingData.sourceEl.closest('.match-slot'); if (fromSlot && fromSlot !== slot) App.dnd.clearSlot(fromSlot); } App.dnd.createTag(slot, code, label); if (!reusable) App.dnd.showOptionInPool(group, code, false); App.updateNavState(); } },
+        createTag(slot, code, label){ slot.innerHTML = ''; const t = document.createElement('span'); t.className = 'tag'; t.setAttribute('draggable', 'true'); t.dataset.value = code; t.textContent = label; slot.appendChild(t); slot.classList.add('filled'); },
+        clearSlot(slot){ if (slot) { slot.innerHTML = ''; slot.classList.remove('filled'); } },
+        showOptionInPool(group, code, visible){ const opt = group.querySelector(`.drag-pool .drag-option[data-value="${code}"]`); if (opt) opt.classList.toggle('hidden-in-pool', !visible); }
+    },
+    
+    buildQuestionNav() {
+        this.el.qNavContainer.innerHTML = '';
+        this.config.questionList.forEach(qNum => {
+            const navItem = document.createElement('div');
+            navItem.className = 'q-nav-item';
+            navItem.textContent = qNum;
+            navItem.dataset.qnum = qNum;
+            navItem.addEventListener('click', () => {
+                const input = document.querySelector(`[data-q="${qNum}"], [name="q${qNum}"]`);
+                if (input) {
+                    const group = input.closest('.group');
+                    if (group) group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (!input.closest('.match-slot')) input.focus();
+                }
+            });
+            this.el.qNavContainer.appendChild(navItem);
+        });
+    },
+
+    updateNavState() {
+        this.config.questionList.forEach(qNum => {
+            const navItem = this.el.qNavContainer.querySelector(`[data-qnum="${qNum}"]`);
+            if (!navItem) return;
+
+            let isAnswered = false;
+            
+            const qKey = `q${qNum}`;
+            const radioInput = document.querySelector(`input[name="${qKey}"]:checked`);
+            const matchSlot = document.querySelector(`.match-slot[data-q="${qNum}"]`);
+
+            if (radioInput) {
+                isAnswered = true;
+            } else if (matchSlot && matchSlot.classList.contains('filled')) {
+                isAnswered = true;
+            }
+            
+            navItem.classList.toggle('answered', isAnswered);
+        });
+    },
+
+    saveState() {
+        const answers = { single: {}, matching: {} };
+        const notesText = {};
+
+        document.querySelectorAll('input[type="radio"]:checked').forEach(i => { answers.single[i.name] = i.value; });
+        document.querySelectorAll('.match-slot.filled .tag').forEach(t => { const q = t.closest('.match-slot').dataset.q; answers.matching[`q${q}`] = t.dataset.value; });
+        
+        this.el.notesList.querySelectorAll('.note-card').forEach(card => { const hid = card.dataset.hid; const textarea = card.querySelector('textarea'); if (hid && textarea) { notesText[hid] = textarea.value; } });
+        const settings = { fontSize: document.documentElement.className, darkMode: document.body.classList.contains('dark-mode') };
+
+        const data = {
+            answers,
+            testPagesHTML: this.el.testPagesContainer.innerHTML,
+            notesHTML: this.el.notesList.innerHTML,
+            notesText,
+            timerSecs: this.state.timerSecs,
+            settings
+        };
+        localStorage.setItem(this.config.localStorageKey, JSON.stringify(data));
+        this.toast('Progress saved!');
+    },
+
+    loadState() {
+        const savedData = localStorage.getItem(this.config.localStorageKey);
+        if (!savedData) return;
+        try {
+            const data = JSON.parse(savedData);
+            
+            if (data.testPagesHTML) this.el.testPagesContainer.innerHTML = data.testPagesHTML;
+            if (data.notesHTML) this.el.notesList.innerHTML = data.notesHTML;
+            if (data.timerSecs) { this.state.timerSecs = data.timerSecs; this.updateTimerUI(); }
+
+            if (data.notesText) {
+                for (const [hid, text] of Object.entries(data.notesText)) {
+                    const card = this.el.notesList.querySelector(`.note-card[data-hid="${hid}"]`);
+                    if (card) { const textarea = card.querySelector('textarea'); if (textarea) textarea.value = text; }
+                }
+            }
+
+            if (data.answers) {
+                Object.entries(data.answers.single || {}).forEach(([n, v]) => { const i = document.querySelector(`[name="${n}"][value="${v}"]`); if(i) i.checked=true; });
+                // Drag and drop state is restored via testPagesHTML.
+            }
+
+            if (data.settings) {
+                document.documentElement.className = data.settings.fontSize || 'font-regular';
+                document.body.classList.toggle('dark-mode', data.settings.darkMode);
+                this.el.settingsPanel.querySelectorAll('.settings-option[data-size]').forEach(b => b.classList.toggle('active', `font-${b.dataset.size}` === data.settings.fontSize));
+                this.el.settingsPanel.querySelectorAll('.settings-option[data-mode]').forEach(b => b.classList.toggle('active', (b.dataset.mode === 'dark') === data.settings.darkMode));
+            }
+        } catch (e) {
+            console.error("Failed to load state:", e);
+            localStorage.removeItem(this.config.localStorageKey);
+        }
+    },
+    
+    clearAll() {
+        if (!confirm('Are you sure you want to clear all progress? This will remove all answers and highlights.')) return;
+        localStorage.removeItem(this.config.localStorageKey);
+        window.location.reload();
+    },
+
+    toggleFinishMode() {
+        if (this.state.isReviewing) {
+            this.returnToTest();
+        } else {
+            if (confirm('Are you sure you want to finish and submit your answers?')) {
+                this.finishTest();
+            }
+        }
+    },
+
+    finishTest() {
+        this.state.isReviewing = true;
+        this.el.finishBtn.textContent = 'Return to Test';
+        this.el.mainShell.classList.add('split-view');
+        this.Transcript.buildOnce();
+        
+        const resultsTableHTML = this.generateResultsTable();
+        document.querySelector('.results-in-page').innerHTML = resultsTableHTML;
+        
+        document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+        document.querySelectorAll('[draggable="true"]').forEach(el => el.setAttribute('draggable', 'false'));
+        clearInterval(this.state.timerInterval);
+        this.gradeAndHighlight();
+    },
+
+    gradeAndHighlight() {
+        const { answerKey } = this.config;
+        const norm = v => String(v ?? '').trim().toLowerCase();
+        
+        this.config.questionList.forEach(qNum => {
+            let isCorrect = false;
+            let qKey = `q${qNum}`;
+
+            if (answerKey.single[qKey]) {
+                const userAns = document.querySelector(`[name="${qKey}"]:checked`)?.value;
+                isCorrect = norm(userAns) === norm(answerKey.single[qKey]);
+            } else if (answerKey.matching[qKey]) {
+                const userAns = document.querySelector(`.match-slot[data-q="${qNum}"] .tag`)?.dataset.value;
+                isCorrect = norm(userAns) === norm(answerKey.matching[qKey]);
+            }
+            
+            const navItem = this.el.qNavContainer.querySelector(`[data-qnum="${qNum}"]`);
+            if (navItem) {
+                navItem.classList.remove('answered');
+                navItem.classList.add(isCorrect ? 'correct' : 'incorrect');
+            }
+        });
+    },
+
+    returnToTest() {
+        this.state.isReviewing = false;
+        this.el.finishBtn.textContent = 'Finish';
+        this.el.mainShell.classList.remove('split-view');
+        document.querySelector('.results-in-page').innerHTML = '';
+        document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+        document.querySelectorAll('.tag, .drag-option').forEach(el => el.setAttribute('draggable', 'true'));
+        this.startTimer();
+
+        this.el.qNavContainer.querySelectorAll('.q-nav-item').forEach(i => i.classList.remove('correct', 'incorrect'));
+        this.updateNavState();
+    },
+
+    generateResultsTable() {
+        let tableHTML = '<h4>Answer Review</h4><table class="results-table"><thead><tr><th>Question</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>';
+        const { answerKey } = this.config;
+        const norm = v => String(v ?? '').trim().toLowerCase();
+
+        this.config.questionList.forEach(qNumStr => {
+            let userAns, correctAns, isCorrect, userAnsStr, correctAnsStr;
+            let qKey = `q${qNumStr}`;
+
+            if (answerKey.single[qKey]) {
+                userAns = document.querySelector(`[name="${qKey}"]:checked`)?.value;
+                correctAns = answerKey.single[qKey];
+                isCorrect = norm(userAns) === norm(correctAns);
+                userAnsStr = escapeHtml(userAns) || '<i>No Answer</i>';
+                correctAnsStr = escapeHtml(correctAns);
+            } else if (answerKey.matching[qKey]) {
+                userAns = document.querySelector(`.match-slot[data-q="${qNumStr}"] .tag`)?.dataset.value;
+                correctAns = answerKey.matching[qKey];
+                isCorrect = norm(userAns) === norm(correctAns);
+                userAnsStr = escapeHtml(userAns) || '<i>No Answer</i>';
+                correctAnsStr = escapeHtml(correctAns);
+            }
+            
+            tableHTML += `<tr><td><b>${qNumStr}</b></td><td>${userAnsStr}</td><td>${correctAnsStr}</td><td class="${isCorrect ? 'result-correct' : 'result-incorrect'}">${isCorrect ? '✔ Correct' : '✖ Incorrect'}</td></tr>`;
+        });
+        return tableHTML + '</tbody></table>';
+    },
+
+    toast(msg) { this.el.toast.textContent = msg; this.el.toast.classList.add('show'); setTimeout(() => this.el.toast.classList.remove('show'), 1200); },
+    
+    AudioPlayer: {
+        init() {
+            const player = document.querySelector('.audio-player-wrapper');
+            if (!player) return;
+            const audio = player.querySelector('.listening-audio'); const playPauseBtn = player.querySelector('.play-pause-btn'); const progressContainer = player.querySelector('.progress-container'); const progressBar = player.querySelector('.progress-bar'); const timeDisplay = player.querySelector('.time-display'); const speedSelect = player.querySelector('.playback-speed');
+            let isScrubbing = false;
+            const formatTime = (t) => { if (isNaN(t)) return "00:00"; const m = Math.floor(t / 60), s = Math.floor(t % 60); return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; };
+            const updateUI = () => { if (audio.duration && !isScrubbing) { progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`; timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; } playPauseBtn.innerHTML = audio.paused ? '&#9658;' : '&#10074;&#10074;'; };
+            const scrub = (e) => { if (!isNaN(audio.duration)) { const rect = progressContainer.getBoundingClientRect(); const p = Math.min(Math.max(0, (e.clientX - rect.left) / rect.width), 1); audio.currentTime = p * audio.duration; updateUI(); } };
+            playPauseBtn.addEventListener('click', () => { if (audio.paused) audio.play(); else audio.pause(); });
+            speedSelect.addEventListener('change', (e) => audio.playbackRate = parseFloat(e.target.value));
+            audio.addEventListener('timeupdate', updateUI); audio.addEventListener('loadedmetadata', updateUI);
+            audio.addEventListener('play', updateUI); audio.addEventListener('pause', updateUI);
+            progressContainer.addEventListener('mousedown', (e) => { isScrubbing = true; scrub(e); });
+            document.addEventListener('mousemove', (e) => { if (isScrubbing) scrub(e); });
+            document.addEventListener('mouseup', () => { isScrubbing = false; });
+        }
+    },
+    
+    Splitter: {
+        init() {
+            const splitter = document.getElementById('splitter'), leftPane = document.getElementById('left-pane'), rightPane = document.getElementById('right-pane');
+            let isDragging = false;
+            splitter.addEventListener('mousedown', () => { isDragging = true; document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; });
+            window.addEventListener('mouseup', () => { isDragging = false; document.body.style.cursor = 'default'; document.body.style.userSelect = 'auto'; });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const totalWidth = leftPane.parentElement.offsetWidth, newLeftWidth = e.clientX, newRightWidth = totalWidth - newLeftWidth - splitter.offsetWidth;
+                if (newLeftWidth > 200 && newRightWidth > 200) { leftPane.style.flexBasis = `${newLeftWidth}px`; rightPane.style.flexBasis = `${newRightWidth}px`; }
+            });
+        }
+    },
+
+    Transcript: {
+        buildOnce() {
+            const tWrap = App.el.transcriptContent;
+            if (tWrap.dataset.built) return;
+            CONFIG_DATA.transcriptLines.forEach(([start, end, text]) => {
+                const lineEl = document.createElement('div');
+                lineEl.className = 't-line';
+                const textP = document.createElement('p');
+                textP.innerHTML = text;
+                lineEl.appendChild(textP);
+                tWrap.appendChild(lineEl);
+            });
+            const closeBtn = document.createElement('button');
+            closeBtn.id = 'close-transcript-btn';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.addEventListener('click', () => App.el.mainShell.classList.remove('split-view'));
+            tWrap.prepend(closeBtn);
+            tWrap.dataset.built = '1';
+        }
+    },
+    
+    Templates: {
+      audioPlayer() { return `<div class="audio-player"><button class="play-pause-btn">&#9658;</button><div class="progress-container"><div class="progress-bar-wrapper"><div class="progress-bar"></div></div></div><div class="time-display">00:00 / 00:00</div><div class="speed-control"><select class="playback-speed"><option value="0.7">0.7x</option><option value="1.0" selected>1.0x</option><option value="1.1">1.1x</option><option value="1.2">1.2x</option><option value="1.3">1.3x</option><option value="1.5">1.5x</option></select></div><audio class="listening-audio" src="audio.mp3" preload="metadata"></audio></div>`; },
+      transcriptPage() { return `<h4>Transcript</h4>`; },
+      questionsPage() { return `
+        <div class="test-main-title">Shampoo Marketing Project</div>
+        
+        <div class="group">
+          <h4>Questions 21-26</h4>
+          <p class="instructions">Choose the correct letter, <b>A</b>, <b>B</b>, or <b>C</b>.</p>
+          
+          <p><b>21</b> Janet says that over time, shampoo has become</p>
+          <div class="radio-option">
+            <input type="radio" name="q21" data-q="21" value="A" id="q21a">
+            <label for="q21a"><b>A</b> a cheaper product.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q21" data-q="21" value="B" id="q21b">
+            <label for="q21b"><b>B</b> more hygienic in its effects.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q21" data-q="21" value="C" id="q21c">
+            <label for="q21c"><b>C</b> a different kind of commodity.</label>
+          </div>
+          
+          <p><b>22</b> What does Janet say about 'bad hair days'?</p>
+          <div class="radio-option">
+            <input type="radio" name="q22" data-q="22" value="A" id="q22a">
+            <label for="q22a"><b>A</b> They really do exist.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q22" data-q="22" value="B" id="q22b">
+            <label for="q22b"><b>B</b> Women worry about them more than men.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q22" data-q="22" value="C" id="q22c">
+            <label for="q22c"><b>C</b> Their name is inaccurate.</label>
+          </div>
+          
+          <p><b>23</b> What do Janet and Michael say about the chemicals used in shampoos?</p>
+          <div class="radio-option">
+            <input type="radio" name="q23" data-q="23" value="A" id="q23a">
+            <label for="q23a"><b>A</b> All shampoos contain the same chemicals.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q23" data-q="23" value="B" id="q23b">
+            <label for="q23b"><b>B</b> The chemicals are believed to be dangerous.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q23" data-q="23" value="C" id="q23c">
+            <label for="q23c"><b>C</b> The presence of the chemicals is rarely publicised.</label>
+          </div>
+          
+          <p><b>24</b> According to Janet, printing directly onto shampoo bottles, rather than onto labels,</p>
+          <div class="radio-option">
+            <input type="radio" name="q24" data-q="24" value="A" id="q24a">
+            <label for="q24a"><b>A</b> costs more.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q24" data-q="24" value="B" id="q24b">
+            <label for="q24b"><b>B</b> looks less attractive.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q24" data-q="24" value="C" id="q24c">
+            <label for="q24c"><b>C</b> takes a lot longer.</label>
+          </div>
+          
+          <p><b>25</b> With regard to environmental issues, Michael and Janet want to investigate</p>
+          <div class="radio-option">
+            <input type="radio" name="q25" data-q="25" value="A" id="q25a">
+            <label for="q25a"><b>A</b> the appearance of shampoo bottles.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q25" data-q="25" value="B" id="q25b">
+            <label for="q25b"><b>B</b> variations in the weight of shampoo bottles.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q25" data-q="25" value="C" id="q25c">
+            <label for="q25c"><b>C</b> the source of recycled plastic in shampoo bottles.</label>
+          </div>
+          
+          <p><b>26</b> Michael bases his own shampoo purchase decisions on his</p>
+          <div class="radio-option">
+            <input type="radio" name="q26" data-q="26" value="A" id="q26a">
+            <label for="q26a"><b>A</b> loyalty to certain brands.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q26" data-q="26" value="B" id="q26b">
+            <label for="q26b"><b>B</b> desire to get value for money.</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="q26" data-q="26" value="C" id="q26c">
+            <label for="q26c"><b>C</b> willingness to try new products.</label>
+          </div>
+        </div>
+
+        <div class="group">
+          <h4>Questions 27-30</h4>
+          <p class="instructions">According to the speakers, what is the main advertising focus of each of the following shampoo advertisements? Choose FOUR answers from the box and write the correct letter, <b>A-G</b> next to questions 27-30.</p>
+          
+          <div class="matching-flex">
+            <div class="match-list">
+              <div class="match-row"><span class="match-q"><b>27</b> Zing</span><span class="match-slot" data-q="27"></span></div>
+              <div class="match-row"><span class="match-q"><b>28</b> Splash</span><span class="match-slot" data-q="28"></span></div>
+              <div class="match-row"><span class="match-q"><b>29</b> Just go</span><span class="match-slot" data-q="29"></span></div>
+              <div class="match-row"><span class="match-q"><b>30</b> Brozene</span><span class="match-slot" data-q="30"></span></div>
+            </div>
+            
+            <div class="matching-options">
+              <strong>Advertising focuses</strong>
+              <div class="drag-pool" data-reusable="false">
+                <div class="drag-option" draggable="true" data-value="A"><b>A</b> link to relaxation</div>
+                <div class="drag-option" draggable="true" data-value="B"><b>B</b> enviable lifestyle</div>
+                <div class="drag-option" draggable="true" data-value="C"><b>C</b> natural ingredients</div>
+                <div class="drag-option" draggable="true" data-value="D"><b>D</b> masculine image</div>
+                <div class="drag-option" draggable="true" data-value="E"><b>E</b> product reliability</div>
+                <div class="drag-option" draggable="true" data-value="F"><b>F</b> romantic interest</div>
+                <div class="drag-option" draggable="true" data-value="G"><b>G</b> use by celebrities</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="results-in-page"></div>
+      `; }
+    }
+};
+
+function escapeHtml(s) { return s ? s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) : ''; }
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+}());
+</script>
+</body>
+</html>

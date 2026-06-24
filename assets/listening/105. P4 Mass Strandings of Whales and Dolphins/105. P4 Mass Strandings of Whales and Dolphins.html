@@ -1,0 +1,713 @@
+此内容由🍠@Listening 永不虾滑整理，仅作为分享供个人使用；禁止商用、倒卖和引流。有问题请先仔细看🍠这个账号的置顶和分享贴。没有团队，不是机构，纯个人分享。督学和其他相关课程请咨询主页另一个号@心情有点虾滑（不回任何机经相关消息）。
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>IELTS Listening Simulator · Mass Strandings (鲸豚搁浅) · 高亮逻辑：棕→玫红</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --splitter-width: 6px;
+            --splitter-color: #e2e8f0;
+            --bg-color: #f8fafc;
+            --panel-color: #ffffff;
+            --text-color: #0f172a;
+            --border-color: #e2e8f0;
+            --accent-color: #3b82f6;
+            --answered-bg: #dbeafe;
+            --answered-border: #93c5fd;
+            --answered-text: #1e40af;
+            --correct-bg: #dcfce7;
+            --correct-border: #4ade80;
+            --correct-text: #166534;
+            --incorrect-bg: #fee2e2;
+            --incorrect-border: #f87171;
+            --incorrect-text: #991b1b;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.02);
+        }
+
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --panel-color: #1e293b;
+            --text-color: #e2e8f0;
+            --border-color: #334155;
+            --splitter-color: #334155;
+            --accent-color: #60a5fa;
+            --answered-bg: #1e3a8a;
+            --answered-border: #3b82f6;
+            --answered-text: #bfdbfe;
+            --correct-bg: #14532d;
+            --correct-border: #22c55e;
+            --correct-text: #bbf7d0;
+            --incorrect-bg: #7f1d1d;
+            --incorrect-border: #ef4444;
+            --incorrect-text: #fecaca;
+        }
+
+        html.font-regular { font-size: 16px; }
+        html.font-large { font-size: 18px; }
+        html.font-xlarge { font-size: 20px; }
+
+        body {
+            font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-weight: 500;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .shell {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 头部 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 28px;
+            background: var(--panel-color);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 1.3rem; font-weight: 600; margin: 0; }
+        .header-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            padding: 6px 18px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .header-btn:hover { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
+        /* 设置面板 */
+        #settings-panel {
+            position: fixed;
+            top: 68px;
+            right: 24px;
+            width: 240px;
+            background: var(--panel-color);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            z-index: 1001;
+            padding: 12px;
+            display: none;
+        }
+        .settings-group { margin-bottom: 12px; }
+        .settings-title { font-size: 0.75rem; color: #64748b; margin-bottom: 8px; font-weight: 500; }
+        .settings-options { display: flex; gap: 8px; }
+        .settings-option {
+            flex: 1; text-align: center; padding: 6px; border: 1px solid var(--border-color);
+            background: var(--bg-color); cursor: pointer; font-size: 0.85rem; border-radius: 40px; font-weight: 500;
+        }
+        .settings-option.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+        .overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.2); z-index:1000; display: none; }
+
+        /* 分栏布局 */
+        #main-shell { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
+        #left-pane { flex: 1 1 100%; overflow-y: auto; background: var(--panel-color); transition: flex-basis 0.2s; }
+        #splitter { width: var(--splitter-width); background: var(--splitter-color); cursor: col-resize; display: none; }
+        #splitter:hover { background: var(--accent-color); }
+        #right-pane { flex: 0 0 0; overflow-y: auto; background: var(--bg-color); display: none; padding: 0 24px; border-left: 1px solid var(--border-color); }
+        #main-shell.split-view #left-pane { flex-basis: 55%; }
+        #main-shell.split-view #splitter { display: block; }
+        #main-shell.split-view #right-pane { display: block; flex-basis: calc(45% - var(--splitter-width)); }
+
+        /* 音频置顶 */
+        #sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 12;
+            background: var(--panel-color);
+            padding: 20px 28px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .audio-player { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .play-pause-btn { background: var(--accent-color); color: white; border: none; border-radius: 60px; width: 42px; height: 42px; font-size: 1.3rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .progress-container { flex-grow: 1; min-width: 160px; cursor: pointer; }
+        .progress-bar-wrapper { width: 100%; height: 6px; background-color: #e2e8f0; border-radius: 10px; overflow: hidden; }
+        body.dark-mode .progress-bar-wrapper { background-color: #334155; }
+        .progress-bar { width: 0%; height: 100%; background-color: var(--accent-color); border-radius: 10px; }
+        .time-display { font-size: 0.85rem; font-family: monospace; min-width: 100px; }
+        .speed-control select { padding: 5px 8px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--bg-color); font-weight: 500; }
+
+        /* 题目区域 — 完全仿照105文档样式 */
+        #test-pages-container {
+            padding: 24px 28px 100px;
+        }
+        .notes-section {
+            background: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 20px 28px;
+            margin-bottom: 28px;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+        }
+        .sub-bullet {
+            margin: 8px 0 12px 20px;
+            padding-left: 12px;
+            border-left: 3px solid var(--border-color);
+            color: var(--text-color);
+        }
+        .fill-item {
+            margin: 16px 0;
+            line-height: 1.5;
+        }
+        .q-badge {
+            display: inline-block;
+            background: var(--bg-color);
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+            margin-right: 12px;
+        }
+        .blank {
+            border: 1.5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 6px 12px;
+            width: 180px;
+            font-size: 0.9rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-weight: 500;
+            margin: 0 6px;
+        }
+        .blank:focus { border-color: var(--accent-color); outline: none; }
+        .list-bullet {
+            margin-left: 28px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .sub-item {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        /* 底部栏 */
+        .bottom-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 72px;
+            background: var(--panel-color);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 100;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .bb-left, .bb-center { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .q-nav-container { display: flex; gap: 8px; flex-wrap: wrap; max-width: 500px; }
+        .q-nav-item {
+            display: flex; align-items: center; justify-content: center;
+            min-width: 38px; height: 38px; border-radius: 40px;
+            background: var(--bg-color); border: 1px solid var(--border-color);
+            font-weight: 600; cursor: pointer; font-size: 0.85rem;
+        }
+        .q-nav-item.answered { background: var(--answered-bg); border-color: var(--answered-border); color: var(--answered-text); }
+        .q-nav-item.correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+        .q-nav-item.incorrect { background: var(--incorrect-bg); border-color: var(--incorrect-border); color: var(--incorrect-text); }
+        button {
+            background: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 40px; padding: 8px 16px; cursor: pointer;
+            font-weight: 500; color: var(--text-color); transition: 0.2s;
+        }
+        button:hover { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+        #timer { font-family: monospace; font-size: 1.3rem; font-weight: 600; background: #0f172a10; padding: 4px 12px; border-radius: 60px; }
+
+        /* 高亮样式：棕/玫红/蓝 (支持高亮逻辑: 第一次棕色，第二次同一高亮变为玫红色) */
+        .hl-brown { background-color: #8B4513 !important; color: #ffffff !important; border-radius: 6px; padding: 0 2px; transition: 0.1s ease; }
+        .hl-rose { background-color: #C2185B !important; color: #ffffff !important; border-radius: 6px; padding: 0 2px; transition: 0.1s ease; }
+        .hl-blue { background-color: #3b82f6 !important; color: #ffffff !important; border-radius: 6px; cursor: pointer; padding: 0 2px; }
+
+        #selbar {
+            position: absolute; background: var(--panel-color); backdrop-filter: blur(12px);
+            border-radius: 60px; box-shadow: var(--shadow); padding: 6px 12px;
+            gap: 8px; display: inline-flex; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        #selbar[hidden] { display: none; }
+        #selbar button { border: none; background: #f1f5f9; padding: 6px 14px; border-radius: 40px; font-size: 0.8rem; cursor: pointer; font-weight: 500; }
+        body.dark-mode #selbar button { background: #334155; color: white; }
+
+        /* 笔记侧边栏 */
+        body.notes-open { padding-right: 420px; }
+        #notes {
+            position: fixed; right: -420px; top: 0; bottom: 72px; width: 420px;
+            background: var(--panel-color); border-left: 1px solid var(--border-color);
+            transition: right 0.25s ease; z-index: 99; display: flex; flex-direction: column;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+        body.notes-open #notes { right: 0; }
+        .side-panel-header { display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: 600; }
+        #notes-list { overflow-y: auto; padding: 16px; flex-grow: 1; }
+        .note-card { background: var(--bg-color); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+        .note-quote { font-weight: 700; font-size: 0.95rem; margin-bottom: 12px; background: #f1f5f9; padding: 8px; border-radius: 12px; }
+        .note-card textarea { width: 100%; min-height: 80px; border-radius: 16px; border: 1px solid var(--border-color); padding: 10px; background: var(--panel-color); color: var(--text-color); margin: 8px 0; }
+        .note-actions button { background: transparent; border: 1px solid var(--incorrect-border); color: var(--incorrect-text); border-radius: 30px; padding: 6px 12px; }
+
+        /* 批改表格 & Transcript */
+        .group-results { margin-top: 28px; border-top: 2px dashed var(--border-color); padding-top: 20px; }
+        .results-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .results-table th, .results-table td { border: 1px solid var(--border-color); padding: 10px 12px; text-align: left; }
+        .result-correct { color: #16a34a; font-weight: 700; }
+        .result-incorrect { color: #dc2626; font-weight: 700; }
+        .answer-highlight { background-color: #fde047; color: #0f172a; padding: 2px 6px; border-radius: 12px; font-weight: 600; }
+        body.dark-mode .answer-highlight { background-color: #facc15; color: #0f172a; }
+        #transcript-content { padding-bottom: 80px; }
+        #transcript-content p { line-height: 1.65; margin-bottom: 16px; }
+        #toast { position: fixed; bottom: 90px; right: 28px; background: #10b981; color: white; padding: 10px 20px; border-radius: 60px; opacity: 0; transition: 0.2s; pointer-events: none; z-index: 200; font-weight: 500; }
+        #toast.show { opacity: 1; transform: translateY(-6px); }
+    </style>
+</head>
+<body class="font-regular">
+<div class="shell">
+    <header class="header">
+        <h1>IELTS Listening Practice · Mass Strandings</h1>
+        <button id="settings-btn" class="header-btn">⚙️ Text Size/Color</button>
+    </header>
+    <div id="settings-panel">
+        <div class="settings-group"><div class="settings-title">Font Size</div><div class="settings-options"><button class="settings-option active" data-size="regular">Regular</button><button class="settings-option" data-size="large">Large</button><button class="settings-option" data-size="xlarge">X-Large</button></div></div>
+        <div class="settings-group"><div class="settings-title">Color Mode</div><div class="settings-options"><button class="settings-option active" data-mode="light">Light</button><button class="settings-option" data-mode="dark">Dark</button></div></div>
+    </div>
+    <div class="overlay"></div>
+    <div id="main-shell">
+        <div id="left-pane">
+            <div id="sticky-header"><div class="audio-player-wrapper"></div></div>
+            <div id="test-pages-container"></div>
+        </div>
+        <div id="splitter"></div>
+        <div id="right-pane"><div id="transcript-content"></div></div>
+    </div>
+    <div class="bottom-bar">
+        <div class="bb-left"><div id="q-nav-container" class="q-nav-container"></div></div>
+        <div class="bb-center">
+            <span id="timer">00:00</span>
+            <button id="finish-btn">Finish</button>
+            <button id="save-btn">Save</button>
+            <button id="clear-btn">Clear</button>
+            <button id="toggle-notes-btn">📝 Notes</button>
+            <button id="toggle-transcript-btn">📄 Transcript</button>
+        </div>
+    </div>
+    <div id="notes">
+        <div class="side-panel-header"><span>📘 My Notes</span><button id="notes-close" class="side-panel-close">✕</button></div>
+        <div id="notes-list"></div>
+    </div>
+    <div id="selbar" hidden><button data-act="hl">Highlight</button><button data-act="note">Note</button><button data-act="del">Clear</button></div>
+    <div id="toast">Progress saved!</div>
+
+    <script>
+        (function(){
+            // ---------- 答案库 ----------
+            const ANSWER_KEY = {
+                "31": "tide",
+                "32": "ears/hearing",
+                "33": "plants",
+                "34": "feeding",
+                "35": "noises",
+                "36": "healthy",
+                "37": "group",
+                "38": "social",
+                "39": "leader",
+                "40": "networks"
+            };
+            function normalize(s) { let v = (s || "").trim().toLowerCase(); if (v === "ears" || v === "hearing") return "ears/hearing"; return v; }
+            function isCorrect(q, user) { return normalize(user) === normalize(ANSWER_KEY[q]); }
+
+            // ---------- 完整Transcript (底部留白) ----------
+            const FULL_TRANSCRIPT = `
+                <h4>🎧 Listening Transcript (Answers Highlighted)</h4>
+                <p>Good afternoon everyone. Well with some of you about to go out on field work, it's timely that in this afternoon session I'll be sharing some ideas about the reasons why groups of whales and dolphins sometimes swim ashore from the sea right onto the beach and, most often, die in what are known as mass strandings.</p>
+                <p>Unfortunately, this type of event is a frequent occurrence in some of the locations that you'll be travelling to, where sometimes the <span class="answer-highlight">tide</span> goes out suddenly, confusing the animals.</p>
+                <p>However, there are many other theories about the causes of mass strandings. The first is that the behaviour is linked to parasites. It's often found that stranded animals were infested with large numbers of parasites. For instance, a type of worm is commonly found in the <span class="answer-highlight">ears</span> of dead whales. Since marine animals rely heavily on their hearing to navigate, this type of infestation has the potential to be very harmful.</p>
+                <p>Another theory is related to toxins or poisons. These have also been found to contribute to the death of many marine animals. Many toxins, as I'm sure you're aware, originate from <span class="answer-highlight">plants</span> or animals. The whale ingests these toxins in its normal feeding behaviour, but whether these poisons directly or indirectly lead to stranding and death, seems to depend upon the toxin involved.</p>
+                <p>In 1988, for example, 14 humpback whales examined after stranding along the beaches of Cape Cod were found to have been poisoned after eating tuna that contained saxitoxin, the same toxin that can be fatal in humans.</p>
+                <p>Alternatively, it has also been suggested that some animals strand accidentally by following their prey ashore in the confusion of the chase. In 1995, David Thurston monitored pilot whales that beached after following squid ashore. However, this idea does not seem to hold true for the majority of mass strandings, because examination of the animal's stomach contents revealed that most had not been <span class="answer-highlight">feeding</span> as they stranded.</p>
+                <p>There are also some new theories which link strandings to humans. A growing concern is that loud <span class="answer-highlight">noises</span> in the ocean cause strandings. Noises such as those caused by military exercises are of particular concern, and have been pinpointed as the cause of some strandings of late.</p>
+                <p>One of these, a mass stranding of whales in 2000 in the Bahamas, coincided closely with experiments using a new submarine detection system. There were several factors that made this stranding stand out as different from previous strandings. This led researchers to look for a new cause. For one, all the stranded animals were <span class="answer-highlight">healthy</span>. In addition, the animals were spread out along 38 kilometers of coast, whereas it's more common for the animals to be found in a <span class="answer-highlight">group</span> when mass strandings occur.</p>
+                <p>A final theory is related to group behaviour, and suggests that sea mammals cannot distinguish between sick and healthy leaders, and will follow sick leaders, even to an inevitable death. This is a particularly interesting theory, since the whales that are thought to be most <span class="answer-highlight">social</span>, the toothed whales, are the group that strand the most frequently. The theory is also supported by evidence from a dolphin stranding in 1994. Examination of the dead animals revealed that, apart from the <span class="answer-highlight">leader</span>, all the others had been healthy at the time of their death.</p>
+                <p>Without one consistent theory, however, it is very hard for us to do anything about this phenomenon, except to assist animals where and when we can. Stranding <span class="answer-highlight">networks</span> have been established around the world, to aid in rescuing animals and collecting samples from those that could not be helped. I recommend John Connor's Marine Mammals Ashore, as an excellent starting point if you're interested in finding out more about these networks, or establishing one yourself.</p>
+                <div style="height: 60px;"></div>
+                <p style="margin-top:12px; font-style:italic;">— End of Section 4 —</p>
+                <div style="height: 80px;"></div>
+            `;
+
+            // ----- 构建题目布局: 完全依照105文档，每个填空单独成行，列表缩进清晰 -----
+            function buildQuestionsLayout() {
+                return `
+                    <div class="notes-section">
+                        <div class="section-title">Mass strandings: Write NO MORE THAN TWO WORDS</div>
+                        <div class="sub-bullet">situations where groups of whales, dolphins, etc. swim onto the beach and die</div>
+                        <div class="fill-item"><span class="q-badge">31</span> Common in areas where the <input type="text" class="blank" data-qnum="31" placeholder="your answer"> can change quickly.</div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="section-title">Several other theories:</div>
+                        <div class="fill-item"><span class="q-badge">32</span> <strong>Parasites:</strong> e.g. some parasites can affect marine animals' <input type="text" class="blank" data-qnum="32" placeholder="answer">, which they depend on for navigation.</div>
+                        <div class="fill-item"><span class="q-badge">33</span> <strong>Toxins:</strong> Poisons from <input type="text" class="blank" data-qnum="33" placeholder="answer"> and animals, which are commonly consumed by whales e.g. Cape Cod (1988) – whales were killed by saxitoxin.</div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="section-title">Accidental Strandings</div>
+                        <div class="fill-item"><span class="q-badge">34</span> Animals may follow prey ashore, e.g. Thurston (1995)<br>The majority of animals were not <input type="text" class="blank" data-qnum="34" placeholder="answer"> when they stranded.</div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="section-title">Human Activity</div>
+                        <div class="fill-item"><span class="q-badge">35</span> <input type="text" class="blank" data-qnum="35" placeholder="answer"> from military tests are linked to some recent strandings</div>
+                        <div class="fill-item"><span class="q-badge">36 & 37</span> The Bahamas (2000) stranding was unusual because the whales:</div>
+                        <div class="list-bullet">- were all <input type="text" class="blank" data-qnum="36" placeholder="answer"></div>
+                        <div class="list-bullet">- were not in a <input type="text" class="blank" data-qnum="37" placeholder="answer"></div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="section-title">Group Behavior</div>
+                        <div class="fill-item"><span class="q-badge">38</span> More strandings in the most <input type="text" class="blank" data-qnum="38" placeholder="answer"> species of whales</div>
+                        <div class="fill-item"><span class="q-badge">39</span> 1994 dolphin stranding -- only the <input type="text" class="blank" data-qnum="39" placeholder="answer"> was ill</div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="section-title">Further Reading:</div>
+                        <div class="fill-item"><span class="q-badge">40</span> <em>Marine Mammals Ashore</em> (Connor) gives information about stranding <input type="text" class="blank" data-qnum="40" placeholder="answer">.</div>
+                    </div>
+                    <div class="results-wrapper"></div>
+                `;
+            }
+
+            // DOM 元素
+            const mainShell = document.getElementById('main-shell');
+            const splitter = document.getElementById('splitter');
+            const finishBtn = document.getElementById('finish-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const toggleNotes = document.getElementById('toggle-notes-btn');
+            const notesClose = document.getElementById('notes-close');
+            const toggleTranscript = document.getElementById('toggle-transcript-btn');
+            const notesList = document.getElementById('notes-list');
+            const qNavContainer = document.getElementById('q-nav-container');
+            const timerSpan = document.getElementById('timer');
+            const toastDiv = document.getElementById('toast');
+
+            let timerSeconds = 0, timerInterval = null, isReviewing = false, settingsOpen = false;
+
+            // 导航栏
+            function buildNav() {
+                qNavContainer.innerHTML = '';
+                for(let i=31;i<=40;i++) {
+                    const btn = document.createElement('div');
+                    btn.className = 'q-nav-item';
+                    btn.innerText = i;
+                    btn.dataset.q = i;
+                    btn.addEventListener('click', () => {
+                        const inp = document.querySelector(`input.blank[data-qnum="${i}"]`);
+                        if(inp) inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    });
+                    qNavContainer.appendChild(btn);
+                }
+            }
+            function updateNavState() {
+                for(let i=31;i<=40;i++) {
+                    const nav = qNavContainer.querySelector(`.q-nav-item[data-q="${i}"]`);
+                    if(!nav) continue;
+                    const inp = document.querySelector(`input.blank[data-qnum="${i}"]`);
+                    const hasVal = inp && inp.value.trim() !== '';
+                    nav.classList.toggle('answered', hasVal);
+                    if(!isReviewing) nav.classList.remove('correct','incorrect');
+                }
+            }
+            function gradeNavColors() {
+                for(let i=31;i<=40;i++) {
+                    const nav = qNavContainer.querySelector(`.q-nav-item[data-q="${i}"]`);
+                    if(!nav) continue;
+                    const inp = document.querySelector(`input.blank[data-qnum="${i}"]`);
+                    const user = inp ? inp.value : '';
+                    const correct = isCorrect(i.toString(), user);
+                    nav.classList.remove('answered','correct','incorrect');
+                    if(correct) nav.classList.add('correct');
+                    else nav.classList.add('incorrect');
+                }
+            }
+            function generateResultTable() {
+                const old = document.querySelector('.group-results');
+                if(old) old.remove();
+                const firstSection = document.querySelector('.notes-section');
+                if(!firstSection) return;
+                let html = `<div class="group-results"><h5>📊 Answer Review</h5><table class="results-table"><thead><tr><th>Question</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>`;
+                for(let i=31;i<=40;i++) {
+                    const inp = document.querySelector(`input.blank[data-qnum="${i}"]`);
+                    let user = inp ? inp.value.trim() : '—';
+                    if(user === '') user = '—';
+                    let correctVal = ANSWER_KEY[i.toString()];
+                    if(i===32) correctVal = "ears / hearing";
+                    const ok = isCorrect(i.toString(), user);
+                    html += `<tr><td><b>${i}</b></td><td>${user}</td><td>${correctVal}</td><td class="${ok ? 'result-correct' : 'result-incorrect'}">${ok ? '✔ Correct' : '✖ Incorrect'}</td></tr>`;
+                }
+                html += `</tbody></table></div>`;
+                document.getElementById('test-pages-container').insertAdjacentHTML('beforeend', html);
+            }
+            function setInputsEnabled(enabled) {
+                document.querySelectorAll('input.blank').forEach(inp => inp.disabled = !enabled);
+            }
+            function enterReviewMode() {
+                isReviewing = true;
+                finishBtn.innerText = 'Return to Test';
+                mainShell.classList.add('split-view');
+                document.getElementById('transcript-content').innerHTML = FULL_TRANSCRIPT;
+                setInputsEnabled(false);
+                generateResultTable();
+                gradeNavColors();
+                if(timerInterval) clearInterval(timerInterval);
+            }
+            function returnToTestMode() {
+                isReviewing = false;
+                finishBtn.innerText = 'Finish';
+                mainShell.classList.remove('split-view');
+                setInputsEnabled(true);
+                const existing = document.querySelector('.group-results');
+                if(existing) existing.remove();
+                updateNavState();
+                startTimer();
+            }
+            function toggleFinishMode() {
+                if(isReviewing) returnToTestMode();
+                else if(confirm('Submit answers and enter review mode?')) enterReviewMode();
+            }
+
+            function startTimer() {
+                if(timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    let m = Math.floor(timerSeconds/60), s = timerSeconds%60;
+                    timerSpan.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }, 1000);
+            }
+            function saveAll(showMsg=true) {
+                const testContainer = document.getElementById('test-pages-container').innerHTML;
+                const notesHTML = notesList.innerHTML;
+                const data = {
+                    testHTML: testContainer,
+                    notesHTML: notesHTML,
+                    timerSec: timerSeconds,
+                    fontSize: document.documentElement.className,
+                    darkMode: document.body.classList.contains('dark-mode')
+                };
+                localStorage.setItem('ielts_listening_mass', JSON.stringify(data));
+                if(showMsg) showToast('Progress saved!');
+            }
+            function loadFromStorage() {
+                const raw = localStorage.getItem('ielts_listening_mass');
+                if(!raw) return;
+                try{
+                    const data = JSON.parse(raw);
+                    if(data.testHTML) document.getElementById('test-pages-container').innerHTML = data.testHTML;
+                    if(data.notesHTML) notesList.innerHTML = data.notesHTML;
+                    if(data.timerSec !== undefined) timerSeconds = data.timerSec;
+                    if(data.fontSize) document.documentElement.className = data.fontSize;
+                    if(data.darkMode) document.body.classList.toggle('dark-mode', data.darkMode);
+                    let mins = Math.floor(timerSeconds/60), secs = timerSeconds%60;
+                    timerSpan.innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                    document.querySelectorAll('input.blank').forEach(inp => inp.addEventListener('input', () => updateNavState()));
+                    updateNavState();
+                } catch(e) {}
+            }
+            function clearAll() {
+                if(confirm('Clear all progress (answers, highlights, notes)?')) {
+                    localStorage.removeItem('ielts_listening_mass');
+                    location.reload();
+                }
+            }
+            function showToast(msg) { toastDiv.innerText=msg; toastDiv.classList.add('show'); setTimeout(()=>toastDiv.classList.remove('show'),1500); }
+
+            // ---------- 高亮核心逻辑：第一次高亮棕色，第二次同一元素变为玫红色 (hl-brown → hl-rose) ----------
+            function initHighlight() {
+                document.addEventListener('mouseup', (e) => handleSelection(e));
+                document.getElementById('selbar')?.addEventListener('click', (e) => handleToolbar(e));
+            }
+            function handleSelection(e) {
+    if (e.target.closest('#selbar, #notes, .bottom-bar')) return;
+    
+    const sel = window.getSelection();
+    const bar = document.getElementById('selbar');
+    // 检查点击的是不是已经存在的 span
+    const clickedHL = e.target.closest('.hl-brown, .hl-rose, .hl-blue');
+
+    if (clickedHL) {
+        // 如果点的是已有高亮（不管有没有选中文字），都把它设为 target
+        bar.targetElem = clickedHL;
+        bar.hidden = false;
+        const rect = clickedHL.getBoundingClientRect();
+        bar.style.left = `${window.scrollX + rect.left + rect.width / 2 - 70}px`;
+        bar.style.top = `${window.scrollY + rect.top - 40}px`;
+    } else if (sel && !sel.isCollapsed) {
+        // 如果点的是普通文字且有选区，则是新高亮
+        bar.targetElem = null;
+        bar.hidden = false;
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        bar.style.left = `${window.scrollX + rect.left + rect.width / 2 - 70}px`;
+        bar.style.top = `${window.scrollY + rect.top - 40}px`;
+    } else {
+        bar.hidden = true;
+    }
+}
+            function wrapSelection(className) {
+                const sel = window.getSelection();
+                if(sel.isCollapsed) return null;
+                const range = sel.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = className;
+                try { range.surroundContents(span); } catch(e) {
+                    span.appendChild(range.extractContents());
+                    range.insertNode(span);
+                }
+                return span;
+            }
+            function createNoteCard(span) {
+                const hid = span.dataset.hid || Date.now().toString();
+                span.dataset.hid = hid;
+                if(document.querySelector(`.note-card[data-hid="${hid}"]`)) return;
+                const card = document.createElement('div');
+                card.className = 'note-card';
+                card.dataset.hid = hid;
+                card.innerHTML = `<div class="note-quote">${span.innerText.slice(0,120)}</div><textarea placeholder="Write note here..."></textarea><div class="note-actions"><button class="del-note-btn">Delete</button></div>`;
+                card.querySelector('.del-note-btn').onclick = () => {
+                    if(span.parentNode) span.outerHTML = span.innerText;
+                    card.remove();
+                };
+                notesList.prepend(card);
+                document.body.classList.add('notes-open');
+            }
+            function deleteNoteByHid(hid) {
+                const noteCard = document.querySelector(`.note-card[data-hid="${hid}"]`);
+                if(noteCard) noteCard.remove();
+            }
+            function handleToolbar(e) {
+    const act = e.target.closest('button')?.dataset.act;
+    let bar = document.getElementById('selbar');
+    let target = bar.targetElem; // handleSelection 中捕捉到的已有 span
+    const sel = window.getSelection();
+
+    if (act === 'hl') {
+        if (target) {
+            // 情况 A: 点击的是已经存在的高亮元素 -> 切换颜色
+            if (target.classList.contains('hl-brown')) {
+                target.className = 'hl-rose';
+            } else {
+                target.className = 'hl-brown';
+            }
+        } else if (!sel.isCollapsed) {
+            // 情况 B: 选中的是纯文本 -> 创建新的棕色高亮
+            wrapSelection('hl-brown');
+        }
+    } else if (act === 'note') {
+        if (target) {
+            target.className = 'hl-blue';
+            createNoteCard(target);
+        } else if (!sel.isCollapsed) {
+            const newSpan = wrapSelection('hl-blue');
+            if (newSpan) createNoteCard(newSpan);
+        }
+    } else if (act === 'del' && target) {
+        if (target.parentNode) target.outerHTML = target.innerText;
+    }
+
+    // 操作完成后隐藏工具栏并清除选区
+    bar.hidden = true;
+    window.getSelection().removeAllRanges();
+}
+            // 音频初始化
+            function initAudio() {
+                const wrapper = document.querySelector('.audio-player-wrapper');
+                wrapper.innerHTML = `<div class="audio-player"><button class="play-pause-btn">▶</button><div class="progress-container"><div class="progress-bar-wrapper"><div class="progress-bar"></div></div></div><div class="time-display">00:00 / 00:00</div><div class="speed-control"><select class="playback-speed"><option value="0.7">0.7x</option><option value="1.0" selected>1.0x</option><option value="1.1">1.1x</option><option value="1.2">1.2x</option><option value="1.5">1.5x</option></select></div><audio class="listening-audio" src="audio.mp3" preload="metadata"></audio></div>`;
+                const audio = document.querySelector('.listening-audio');
+                if(!audio) return;
+                const playBtn = wrapper.querySelector('.play-pause-btn');
+                const progContainer = wrapper.querySelector('.progress-container');
+                const progBar = wrapper.querySelector('.progress-bar');
+                const timeSpan = wrapper.querySelector('.time-display');
+                const speedSelect = wrapper.querySelector('.playback-speed');
+                audio.ontimeupdate = () => {
+                    if(audio.duration) progBar.style.width = (audio.currentTime/audio.duration)*100+'%';
+                    timeSpan.innerText = `${Math.floor(audio.currentTime/60)}:${String(Math.floor(audio.currentTime%60)).padStart(2,'0')} / ${Math.floor(audio.duration/60)}:${String(Math.floor(audio.duration%60)).padStart(2,'0')}`;
+                };
+                playBtn.onclick = () => audio.paused ? audio.play() : audio.pause();
+                audio.onplay = () => playBtn.innerText = '⏸';
+                audio.onpause = () => playBtn.innerText = '▶';
+                speedSelect.onchange = () => audio.playbackRate = parseFloat(speedSelect.value);
+                let scrubbing = false;
+                progContainer.onmousedown = (e) => { scrubbing=true; const rect=progContainer.getBoundingClientRect(); audio.currentTime = ((e.clientX-rect.left)/rect.width)*audio.duration; };
+                window.onmouseup = () => scrubbing=false;
+                window.onmousemove = (e) => { if(scrubbing && audio.duration) { const rect=progContainer.getBoundingClientRect(); audio.currentTime = ((e.clientX-rect.left)/rect.width)*audio.duration; } };
+            }
+            function initSplitter() {
+                let drag = false;
+                splitter.addEventListener('mousedown', () => { drag=true; document.body.style.cursor='col-resize'; });
+                window.addEventListener('mouseup', () => { drag=false; document.body.style.cursor=''; });
+                window.addEventListener('mousemove', (e) => {
+                    if(!drag) return;
+                    const left = document.getElementById('left-pane');
+                    const right = document.getElementById('right-pane');
+                    const total = left.parentElement.offsetWidth;
+                    let newLeft = e.clientX;
+                    let newRight = total - newLeft - splitter.offsetWidth;
+                    if(newLeft>200 && newRight>200) { left.style.flexBasis=`${newLeft}px`; right.style.flexBasis=`${newRight}px`; }
+                });
+            }
+            function bindSettings() {
+                const settingsBtn = document.getElementById('settings-btn');
+                const panel = document.getElementById('settings-panel');
+                const overlay = document.querySelector('.overlay');
+                settingsBtn.onclick = (e) => { e.stopPropagation(); settingsOpen=!settingsOpen; panel.style.display=settingsOpen?'block':'none'; overlay.style.display=settingsOpen?'block':'none'; };
+                overlay.onclick = () => { settingsOpen=false; panel.style.display='none'; overlay.style.display='none'; };
+                document.querySelectorAll('[data-size]').forEach(btn => btn.onclick = () => { document.documentElement.className = `font-${btn.dataset.size}`; saveAll(false); });
+                document.querySelectorAll('[data-mode]').forEach(btn => btn.onclick = () => { document.body.classList.toggle('dark-mode', btn.dataset.mode==='dark'); saveAll(false); });
+            }
+
+            function init() {
+                document.getElementById('test-pages-container').innerHTML = buildQuestionsLayout();
+                buildNav();
+                initAudio();
+                initSplitter();
+                loadFromStorage();
+                startTimer();
+                initHighlight();
+                bindSettings();
+                finishBtn.addEventListener('click', toggleFinishMode);
+                saveBtn.addEventListener('click', () => saveAll(true));
+                clearBtn.addEventListener('click', clearAll);
+                toggleNotes.addEventListener('click', () => document.body.classList.toggle('notes-open'));
+                notesClose.addEventListener('click', () => document.body.classList.remove('notes-open'));
+                toggleTranscript.addEventListener('click', () => { if(!isReviewing) mainShell.classList.toggle('split-view'); else showToast('Exit review mode first.'); });
+                updateNavState();
+            }
+            init();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1017 @@
+此内容由🍠@Listening 永不虾滑整理，仅作为分享供个人使用；禁止商用、倒卖和引流。有问题请先仔细看🍠这个账号的置顶和分享贴。没有团队，不是机构，纯个人分享。督学和其他相关课程请咨询主页另一个号@心情有点虾滑（不回任何机经相关消息）。
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>雅思听力机考 · 国际俱乐部填空练习</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --splitter-width: 8px;
+      --bg-color: #f9fafb;
+      --panel-bg: #ffffff;
+      --text-color: #1e293b;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --correct-bg: #dcfce7;
+      --correct-border: #4ade80;
+      --incorrect-bg: #fee2e2;
+      --incorrect-border: #f87171;
+      --answered-bg: #dbeafe;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    body.dark {
+      --bg-color: #0f172a;
+      --panel-bg: #1e293b;
+      --text-color: #e2e8f0;
+      --border: #334155;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --correct-bg: #14532d;
+      --correct-border: #22c55e;
+      --incorrect-bg: #7f1d1d;
+      --incorrect-border: #ef4444;
+      --answered-bg: #1e3a8a;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 400;
+      height: 100vh;
+      overflow: hidden;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    html.font-regular { font-size: 16px; }
+    html.font-large { font-size: 18px; }
+    html.font-xlarge { font-size: 20px; }
+
+    h1, h2, h3, h4, button, .q-nav-item, .settings-option, .header-btn, 
+    .group-title, .sub-title, label, .tag {
+      font-weight: 500;
+    }
+    p, span, div, input, textarea {
+      font-weight: 400;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 28px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: 1.35rem;
+      font-weight: 500;
+    }
+    .header-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 6px 18px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .header-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    #settingsPanel {
+      position: fixed;
+      top: 70px;
+      right: 28px;
+      width: 240px;
+      background: var(--panel-bg);
+      border-radius: 20px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      z-index: 1100;
+      padding: 16px;
+      display: none;
+    }
+    .settings-group {
+      margin-bottom: 16px;
+    }
+    .settings-title {
+      font-size: 0.75rem;
+      margin-bottom: 8px;
+      color: #64748b;
+    }
+    .settings-options {
+      display: flex;
+      gap: 8px;
+    }
+    .settings-option {
+      flex: 1;
+      text-align: center;
+      padding: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-color);
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .settings-option.active {
+      background: var(--accent);
+      color: white;
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.2);
+      z-index: 1050;
+      display: none;
+    }
+
+    .split-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .left-pane {
+      flex: 1 1 100%;
+      overflow-y: auto;
+      background: var(--panel-bg);
+    }
+    .splitter {
+      width: var(--splitter-width);
+      background: var(--border);
+      cursor: col-resize;
+      display: none;
+    }
+    .splitter:hover {
+      background: var(--accent);
+    }
+    .right-pane {
+      flex: 0 0 0;
+      overflow-y: auto;
+      background: var(--bg-color);
+      display: none;
+      border-left: 1px solid var(--border);
+      padding: 20px 24px 120px 24px;
+    }
+    .split-view .left-pane {
+      flex-basis: 55%;
+    }
+    .split-view .splitter {
+      display: block;
+    }
+    .split-view .right-pane {
+      display: block;
+      flex-basis: calc(45% - var(--splitter-width));
+    }
+
+    .audio-sticky {
+      position: sticky;
+      top: 0;
+      background: var(--panel-bg);
+      z-index: 10;
+      padding: 16px 28px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .audio-player {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .play-pause-btn {
+      background: var(--accent);
+      border: none;
+      color: white;
+      width: 42px;
+      height: 42px;
+      border-radius: 60px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-container {
+      flex: 3;
+      min-width: 160px;
+      cursor: pointer;
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+    }
+    .time-display {
+      font-family: monospace;
+      font-size: 0.85rem;
+      min-width: 110px;
+    }
+    .speed-select {
+      padding: 5px 8px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background: var(--bg-color);
+    }
+
+    .test-container {
+      padding: 24px 28px 100px;
+    }
+    .question-group {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .group-title {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .sub-title {
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 12px 0 8px 0;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent);
+    }
+    .instruction {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 20px;
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+    }
+    .question-item {
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .q-num {
+      font-weight: 500;
+      background: var(--bg-color);
+      padding: 2px 10px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      min-width: 45px;
+      text-align: center;
+    }
+    .blank-input {
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 10px 14px;
+      width: 180px;
+      font-size: 0.95rem;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+    .blank-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: var(--panel-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 200;
+    }
+    .q-nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      max-width: 500px;
+    }
+    .q-nav-item {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 40px;
+      background: var(--bg-color);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .q-nav-item.answered {
+      background: var(--answered-bg);
+      border-color: #60a5fa;
+    }
+    .q-nav-item.correct {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+      color: #166534;
+    }
+    .q-nav-item.incorrect {
+      background: var(--incorrect-bg);
+      border-color: var(--incorrect-border);
+      color: #b91c1c;
+    }
+    .timer {
+      font-family: monospace;
+      font-size: 1.4rem;
+      font-weight: 500;
+      background: #0f172a10;
+      padding: 4px 12px;
+      border-radius: 60px;
+    }
+    .action-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 8px 18px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .action-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* 高亮样式 */
+    .hl-brown {
+      background-color: #8B4513 !important;
+      color: white !important;
+      border-radius: 6px;
+      padding: 0 2px;
+    }
+    .hl-rose {
+      background-color: #C2185B !important;
+      color: white !important;
+      border-radius: 6px;
+    }
+    .hl-blue {
+      background-color: #2563eb !important;
+      color: white !important;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .answer-highlight {
+      background-color: #fde047;
+      color: #0f172a;
+      padding: 2px 4px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    body.dark .answer-highlight {
+      background-color: #facc15;
+      color: #0f172a;
+    }
+
+    #selectionToolbar {
+      position: absolute;
+      background: var(--panel-bg);
+      box-shadow: var(--shadow-md);
+      border-radius: 60px;
+      padding: 6px 12px;
+      display: inline-flex;
+      gap: 10px;
+      z-index: 1300;
+      border: 1px solid var(--border);
+    }
+    #selectionToolbar button {
+      background: transparent;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    #selectionToolbar button:hover {
+      background: var(--accent);
+      color: white;
+    }
+    [hidden] {
+      display: none !important;
+    }
+
+    .notes-sidebar {
+      position: fixed;
+      right: -420px;
+      top: 0;
+      bottom: 72px;
+      width: 420px;
+      background: var(--panel-bg);
+      border-left: 1px solid var(--border);
+      transition: right 0.25s ease;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+    }
+    body.notes-open .notes-sidebar {
+      right: 0;
+    }
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+    }
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .note-card {
+      background: var(--bg-color);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .note-quote {
+      font-weight: 500;
+      font-size: 0.85rem;
+      background: #f1f5f9;
+      padding: 8px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .note-card textarea {
+      width: 100%;
+      min-height: 80px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 10px;
+      background: var(--panel-bg);
+      color: var(--text-color);
+      margin: 8px 0;
+    }
+    .del-note-btn {
+      background: transparent;
+      border: 1px solid var(--incorrect-border);
+      border-radius: 30px;
+      padding: 5px 12px;
+      cursor: pointer;
+    }
+
+    .review-table-wrapper {
+      margin-top: 28px;
+      border-top: 2px dashed var(--border);
+      padding-top: 20px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .correct-tag {
+      color: #16a34a;
+      font-weight: 500;
+    }
+    .incorrect-tag {
+      color: #dc2626;
+      font-weight: 500;
+    }
+    .toast-msg {
+      position: fixed;
+      bottom: 90px;
+      right: 28px;
+      background: #10b981;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 60px;
+      opacity: 0;
+      transition: 0.2s;
+      z-index: 1400;
+    }
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(-6px);
+    }
+  </style>
+</head>
+<body class="font-regular">
+<div class="app-shell">
+  <div class="header">
+    <h1>IELTS Listening · International Club</h1>
+    <button id="settingsBtn" class="header-btn">⚙️ Text Size/Color</button>
+  </div>
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-group"><div class="settings-title">Font Size</div><div class="settings-options"><button data-size="regular" class="settings-option active">Regular</button><button data-size="large" class="settings-option">Large</button><button data-size="xlarge" class="settings-option">X-Large</button></div></div>
+    <div class="settings-group"><div class="settings-title">Color Mode</div><div class="settings-options"><button data-mode="light" class="settings-option active">Light</button><button data-mode="dark" class="settings-option">Dark</button></div></div>
+  </div>
+  <div class="overlay" id="overlay"></div>
+  
+  <div class="split-layout" id="splitLayout">
+    <div class="left-pane" id="leftPane">
+      <div class="audio-sticky">
+        <div class="audio-player" id="audioPlayerArea"></div>
+      </div>
+      <div class="test-container" id="testContainer"></div>
+    </div>
+    <div class="splitter" id="splitter"></div>
+    <div class="right-pane" id="rightPane">
+      <div id="transcriptFull"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="q-nav" id="qNav"></div>
+    <div>
+      <span class="timer" id="timerDisplay">00:00</span>
+      <button id="finishBtn" class="action-btn">Finish</button>
+      <button id="saveBtn" class="action-btn">Save</button>
+      <button id="clearBtn" class="action-btn">Clear</button>
+      <button id="notesBtn" class="action-btn">📝 Notes</button>
+      <button id="transcriptBtn" class="action-btn">📄 Transcript</button>
+    </div>
+  </div>
+
+  <div class="notes-sidebar" id="notesSidebar">
+    <div class="notes-header"><span>📘 My Notes</span><button id="closeNotes">✕</button></div>
+    <div class="notes-list" id="notesList"></div>
+  </div>
+  <div id="selectionToolbar" hidden>
+    <button data-action="hl">Highlight</button>
+    <button data-action="note">Note</button>
+    <button data-action="clearHL">Clear</button>
+  </div>
+  <div id="toastMsg" class="toast-msg">Progress saved!</div>
+</div>
+
+<script>
+  // ----- 标准答案 (来自103文档) -----
+  const ANSWER_KEY = {
+    1: "8.50", 2: "main", 3: "partner", 4: "band", 5: "second",
+    6: "top", 7: "carnival", 8: "charity", 9: "swimming", 10: "theatre"
+  };
+  function normalizeAnswer(str) {
+    let s = String(str).trim().toLowerCase();
+    if (s === "theater") s = "theatre";
+    return s;
+  }
+
+  // ----- 完整听力原文 (答案高亮已嵌入) -----
+  const TRANSCRIPT_HTML = `<h4>📖 听力原文 (答案高亮标记)</h4>
+  <p>Hello, could I speak to Mr. John Gertelstone, please speaking. Oh, hi. My name is Julie Bloom. I'm studying here in the UK for a year and a friend told me you organize an international club where people of different nationalities can meet up.</p>
+  <p>That's right. The club was founded over 50 years ago and at present we've got members from approximately 30 countries.</p>
+  <p>What's the name of your friend? Louise. She's back in the States now. Oh Louise. I remember her. So are you from the States, too, Julie? Yes, from California. Great. Well, let's see what I can tell you about the club. It doesn't cost a lot to become a member. You can join for two months for two pounds 50 or it's <span class="answer-highlight">eight pounds 50</span> for 12 months. And is it only for university students?</p>
+  <p>No, we're open to anyone. We have quite a few members from the language schools in town and also local people who are interested in meeting people from other countries.</p>
+  <p>Okay. So what sorts of things do you do? Well, one thing we organize on a regular basis is dancing. That's a great way to get to know people. Do you mean like disco? No, we don't do disco. We do folk dances. Some from Europe, but some from further afield. Everyone really enjoys them. We meet on Monday evenings at 830. Do you know the university center? Yes, I think so. We meet there in the <span class="answer-highlight">main hall</span>. Don't get confused with the old hall, where there's a ballroom dancing group. They're nothing to do with us.</p>
+  <p>And can I just show up? Sure, everyone's welcome. And do I need to come along with a <span class="answer-highlight">partner</span> for the dancing? You don't have to, though, you can if you want to. I'm sure you'll have a good time. We have live music for some sessions. I don't suppose you play a musical instrument, do you? I play the violin, but I'm not very good. Well, we're looking for some people to join the <span class="answer-highlight">band</span>. If you're interested, why don't you call Mike? His numbers 01356890674.</p>
+  <p>Okay, thanks. Then we also have a meal together regularly. That's once a month, and it's always on a Sunday, the <span class="answer-highlight">second</span> one of the month. Oh, so that'll be this coming Sunday. And where's that held? In the university center again in the canteen, we used to have it in the restaurant on the ground floor, but that's closed at weekends now, unfortunately, so we're up on the <span class="answer-highlight">top</span> floor.</p>
+  <p>Then we have some special summer events, too. On July the second, we're going to a place called Great Hampton about half an hour's drive away to take part in the <span class="answer-highlight">carnival</span> they hold there every year. It's always a good day out, especially if it's a sunny day. ... Well, in that case, you might be interested in our event on July the 16th. That's a walk in the standard hills. We do about 15 kilometres, so it's a decent walk and it's for <span class="answer-highlight">charity</span>.</p>
+  <p>Then on August the 7th, we're having a garden party at the home of one of our organisers. She has an outdoor pool, so if the weather's warm enough, you'll be able to go <span class="answer-highlight">swimming</span>. ... Then our last summer events on September the 4th. Last year, we went to a castle, but this year we're going to the <span class="answer-highlight">theatre</span>. We do ask members to let us know in advance for that so we can book.</p>
+  <p style="height: 30px;"></p>`;
+
+  // ----- 渲染题目（包含小标题）-----
+  function renderQuestions() {
+    const html = `
+      <div class="question-group">
+        <div class="group-title">🌍 International Club</div>
+        <div class="instruction">Write ONE WORD AND/OR A NUMBER for each answer.</div>
+        <div class="sub-title">📌 Membership</div>
+        <div class="question-item" data-qid="1"><span class="q-num">1</span><span>Membership costs 1 £</span><input type="text" class="blank-input" id="input_1" data-q="1" autocomplete="off"><span>for a year</span></div>
+        
+        <div class="sub-title">💃 Regular events · International folk dancing</div>
+        <div class="question-item" data-qid="2"><span class="q-num">2</span><span>in the University Centre: the</span><input type="text" class="blank-input" id="input_2" data-q="2"><span>hall</span></div>
+        <div class="question-item" data-qid="3"><span class="q-num">3</span><span>no need to bring a</span><input type="text" class="blank-input" id="input_3" data-q="3"><span></span></div>
+        <div class="question-item" data-qid="4"><span class="q-num">4</span><span>people needed for the</span><input type="text" class="blank-input" id="input_4" data-q="4"><span>(tel. Mike)</span></div>
+        
+        <div class="sub-title">🍽️ Meal</div>
+        <div class="question-item" data-qid="5"><span class="q-num">5</span><span>on the</span><input type="text" class="blank-input" id="input_5" data-q="5"><span>Sunday of every month</span></div>
+        <div class="question-item" data-qid="6"><span class="q-num">6</span><span>in the University Centre: the canteen on the</span><input type="text" class="blank-input" id="input_6" data-q="6"><span>floor</span></div>
+        
+        <div class="sub-title">☀️ Summer events</div>
+        <div class="question-item" data-qid="7"><span class="q-num">7</span><span>July 2: Great Hampton</span><input type="text" class="blank-input" id="input_7" data-q="7"><span></span></div>
+        <div class="question-item" data-qid="8"><span class="q-num">8</span><span>July 16: 15 km walk for a</span><input type="text" class="blank-input" id="input_8" data-q="8"><span>(in Stannard Hills)</span></div>
+        <div class="question-item" data-qid="9"><span class="q-num">9</span><span>Aug 7: garden party - could go</span><input type="text" class="blank-input" id="input_9" data-q="9"><span>outdoors if weather allows</span></div>
+        <div class="question-item" data-qid="10"><span class="q-num">10</span><span>Sept 4: trip to the</span><input type="text" class="blank-input" id="input_10" data-q="10"><span></span></div>
+      </div>
+      <div id="reviewTablesContainer"></div>
+    `;
+    document.getElementById('testContainer').innerHTML = html;
+  }
+
+  function buildNav() {
+    const navDiv = document.getElementById('qNav');
+    navDiv.innerHTML = '';
+    for (let i=1; i<=10; i++) {
+      const btn = document.createElement('div');
+      btn.className = 'q-nav-item';
+      btn.textContent = i;
+      btn.dataset.q = i;
+      btn.addEventListener('click', () => {
+        document.getElementById(`input_${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      navDiv.appendChild(btn);
+    }
+  }
+
+  function updateNavStyle() {
+    for (let i=1; i<=10; i++) {
+      const inp = document.getElementById(`input_${i}`);
+      const nav = document.querySelector(`.q-nav-item[data-q="${i}"]`);
+      if (nav && inp) nav.classList.toggle('answered', inp.value.trim() !== '');
+    }
+  }
+
+  function getUserAnswers() {
+    const ans = {};
+    for (let i=1;i<=10;i++) ans[i] = document.getElementById(`input_${i}`)?.value.trim() || '';
+    return ans;
+  }
+
+  function gradeAnswers() {
+    const user = getUserAnswers();
+    const results = {};
+    for (let i=1;i<=10;i++) results[i] = normalizeAnswer(user[i]) === normalizeAnswer(ANSWER_KEY[i]);
+    return results;
+  }
+
+  function markNavCorrectness() {
+    const results = gradeAnswers();
+    for (let i=1;i<=10;i++) {
+      const nav = document.querySelector(`.q-nav-item[data-q="${i}"]`);
+      if (nav) {
+        nav.classList.remove('correct', 'incorrect');
+        nav.classList.add(results[i] ? 'correct' : 'incorrect');
+      }
+    }
+  }
+
+  function generateReviewTable() {
+    const container = document.getElementById('reviewTablesContainer');
+    if (!container) return;
+    const results = gradeAnswers();
+    const user = getUserAnswers();
+    let html = `<div class="review-table-wrapper"><h4>📊 答案回顾</h4><table class="results-table"><thead><tr><th>题号</th><th>你的答案</th><th>正确答案</th><th>结果</th></tr></thead><tbody>`;
+    for (let i=1;i<=10;i++) {
+      const u = user[i] || '—';
+      const c = ANSWER_KEY[i];
+      const ok = results[i];
+      html += `<tr><td>${i}</td><td>${escapeHtml(u)}</td><td>${c}</td><td class="${ok ? 'correct-tag' : 'incorrect-tag'}">${ok ? '✔ 正确' : '✘ 错误'}</td></tr>`;
+    }
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+  }
+
+  function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+
+  // 复习模式切换
+  let isReviewMode = false;
+  let timerSeconds = 0;
+  let timerInterval = null;
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      const mins = Math.floor(timerSeconds/60);
+      const secs = timerSeconds%60;
+      document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }, 1000);
+  }
+  function stopTimer() { if(timerInterval) clearInterval(timerInterval); timerInterval=null; }
+
+  function toggleFinishMode() {
+    if (isReviewMode) {
+      isReviewMode = false;
+      document.getElementById('finishBtn').innerText = 'Finish';
+      document.getElementById('splitLayout').classList.remove('split-view');
+      document.querySelectorAll('.blank-input').forEach(inp => inp.disabled = false);
+      document.getElementById('reviewTablesContainer').innerHTML = '';
+      for(let i=1;i<=10;i++) {
+        const nav = document.querySelector(`.q-nav-item[data-q="${i}"]`);
+        if(nav) nav.classList.remove('correct', 'incorrect');
+      }
+      updateNavStyle();
+      startTimer();
+    } else {
+      isReviewMode = true;
+      document.getElementById('finishBtn').innerText = 'Return to Test';
+      document.getElementById('splitLayout').classList.add('split-view');
+      document.querySelectorAll('.blank-input').forEach(inp => inp.disabled = true);
+      generateReviewTable();
+      markNavCorrectness();
+      stopTimer();
+      if (!document.getElementById('transcriptFull').innerHTML.includes('听力原文')) {
+        document.getElementById('transcriptFull').innerHTML = TRANSCRIPT_HTML;
+      }
+    }
+  }
+
+  function saveAll() {
+    const answers = getUserAnswers();
+    const testHTML = document.getElementById('testContainer').innerHTML;
+    const notesHTML = document.getElementById('notesList').innerHTML;
+    const data = { answers, timer: timerSeconds, testHTML, notesHTML, fontSize: document.documentElement.className, darkMode: document.body.classList.contains('dark') };
+    localStorage.setItem('ielts_listening_club', JSON.stringify(data));
+    const toast = document.getElementById('toastMsg');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  }
+  function loadProgress() {
+    const raw = localStorage.getItem('ielts_listening_club');
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      if (data.testHTML) document.getElementById('testContainer').innerHTML = data.testHTML;
+      if (data.notesHTML) document.getElementById('notesList').innerHTML = data.notesHTML;
+      if (data.timer) { timerSeconds = data.timer; updateTimerDisplay(); }
+      if (data.fontSize) document.documentElement.className = data.fontSize;
+      if (data.darkMode) document.body.classList.add('dark');
+      if (data.answers) {
+        for (let i=1;i<=10;i++) {
+          const inp = document.getElementById(`input_${i}`);
+          if (inp && data.answers[i] !== undefined) inp.value = data.answers[i];
+        }
+      }
+      updateNavStyle();
+    } catch(e) {}
+  }
+  function updateTimerDisplay() {
+    const mins = Math.floor(timerSeconds/60), secs = timerSeconds%60;
+    document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+  }
+  function clearAll() {
+    if (confirm('清除所有进度（答案、高亮、笔记）？')) {
+      localStorage.removeItem('ielts_listening_club');
+      location.reload();
+    }
+  }
+
+  // 音频播放器
+  function initAudio() {
+    const audioHTML = `<button class="play-pause-btn" id="playBtn">▶</button>
+    <div class="progress-container" id="progressArea"><div class="progress-bar-wrap"><div class="progress-fill" id="progressFill"></div></div></div>
+    <div class="time-display" id="audioTime">00:00 / 00:00</div>
+    <select class="speed-select" id="speedSelect"><option value="0.7">0.7x</option><option value="1.0" selected>1.0x</option><option value="1.1">1.1x</option><option value="1.2">1.2x</option><option value="1.5">1.5x</option></select>
+    <audio id="audioPlayer" src="audio.mp3" preload="metadata"></audio>`;
+    document.getElementById('audioPlayerArea').innerHTML = audioHTML;
+    const audio = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const fill = document.getElementById('progressFill');
+    const timeSpan = document.getElementById('audioTime');
+    const speed = document.getElementById('speedSelect');
+    audio.addEventListener('loadedmetadata', () => timeSpan.innerText = `00:00 / ${formatTime(audio.duration)}`);
+    playBtn.onclick = () => audio.paused ? audio.play() : audio.pause();
+    audio.onplay = () => playBtn.innerText = '⏸';
+    audio.onpause = () => playBtn.innerText = '▶';
+    audio.ontimeupdate = () => { if(audio.duration) fill.style.width = (audio.currentTime/audio.duration)*100+'%'; timeSpan.innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; };
+    speed.onchange = () => audio.playbackRate = parseFloat(speed.value);
+    document.getElementById('progressArea').onclick = (e) => { const rect = e.currentTarget.getBoundingClientRect(); const percent = (e.clientX - rect.left)/rect.width; audio.currentTime = percent * audio.duration; };
+    function formatTime(t) { if(isNaN(t)) return '00:00'; let m=Math.floor(t/60), s=Math.floor(t%60); return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+  }
+
+  // ----- 高亮逻辑：第一次棕色，同一处第二次变玫红 -----
+  let currentRange = null;
+  let activeHighlightSpan = null;   // 用于存储点击的高亮span
+
+  function handleSelection() {
+    const sel = window.getSelection();
+    if (sel.isCollapsed || sel.toString().trim() === '') {
+      document.getElementById('selectionToolbar').hidden = true;
+      activeHighlightSpan = null;
+      return;
+    }
+    currentRange = sel.getRangeAt(0);
+    activeHighlightSpan = null;
+    const rect = currentRange.getBoundingClientRect();
+    const bar = document.getElementById('selectionToolbar');
+    bar.hidden = false;
+    bar.style.left = `${window.scrollX + rect.left + rect.width/2 - 80}px`;
+    bar.style.top = `${window.scrollY + rect.top - 45}px`;
+  }
+
+  // 当点击已经高亮的span时，弹出工具条，并记录该span
+  function onSpanClick(e) {
+    let target = e.target;
+    while (target && target !== document.body) {
+      if (target.classList && (target.classList.contains('hl-brown') || target.classList.contains('hl-rose') || target.classList.contains('hl-blue'))) {
+        activeHighlightSpan = target;
+        const rect = target.getBoundingClientRect();
+        const bar = document.getElementById('selectionToolbar');
+        bar.hidden = false;
+        bar.style.left = `${window.scrollX + rect.left + rect.width/2 - 80}px`;
+        bar.style.top = `${window.scrollY + rect.top - 45}px`;
+        e.stopPropagation();
+        return;
+      }
+      target = target.parentNode;
+    }
+  }
+
+  // 执行高亮：如果当前选区在已有的高亮span上则升级；否则创建棕色
+  function applyHighlightToRange() {
+    if (!currentRange) return null;
+    // 检查选区内是否完全包含在一个高亮span中
+    let container = currentRange.commonAncestorContainer;
+    if (container.nodeType === 3) container = container.parentElement;
+    const existingHighlight = container.closest?.('.hl-brown, .hl-rose');
+    if (existingHighlight && existingHighlight.classList.contains('hl-brown')) {
+      // 升级为玫红
+      existingHighlight.classList.remove('hl-brown');
+      existingHighlight.classList.add('hl-rose');
+      window.getSelection().removeAllRanges();
+      return existingHighlight;
+    } else if (existingHighlight && existingHighlight.classList.contains('hl-rose')) {
+      // 已经是玫红，不变
+      window.getSelection().removeAllRanges();
+      return existingHighlight;
+    } else {
+      // 新创建棕色高亮
+      const span = document.createElement('span');
+      span.className = 'hl-brown';
+      try {
+        currentRange.surroundContents(span);
+      } catch(e) {
+        const contents = currentRange.extractContents();
+        span.appendChild(contents);
+        currentRange.insertNode(span);
+      }
+      window.getSelection().removeAllRanges();
+      return span;
+    }
+  }
+
+  // 清除当前活动的高亮span（如果activeHighlightSpan存在）
+  function clearHighlightSpan() {
+    if (activeHighlightSpan && activeHighlightSpan.parentNode) {
+      const parent = activeHighlightSpan.parentNode;
+      while (activeHighlightSpan.firstChild) parent.insertBefore(activeHighlightSpan.firstChild, activeHighlightSpan);
+      parent.removeChild(activeHighlightSpan);
+      parent.normalize();
+      activeHighlightSpan = null;
+    } else if (currentRange) {
+      // 如果当前选区内有高亮，尝试清除整个高亮标签
+      const parent = currentRange.commonAncestorContainer.parentElement;
+      const spans = parent?.querySelectorAll('.hl-brown, .hl-rose, .hl-blue') || [];
+      spans.forEach(sp => { if(sp.parentNode) sp.outerHTML = sp.innerText; });
+    }
+    window.getSelection().removeAllRanges();
+  }
+
+  function createNoteFromSpan(span) {
+    if (!span) return;
+    const text = span.innerText.slice(0, 100);
+    const id = 'n'+Date.now()+Math.random();
+    span.dataset.noteId = id;
+    const card = document.createElement('div');
+    card.className = 'note-card';
+    card.dataset.noteId = id;
+    card.innerHTML = `<div class="note-quote">${escapeHtml(text)}</div><textarea placeholder="Write note here..."></textarea><button class="del-note-btn">Delete</button>`;
+    card.querySelector('.del-note-btn').onclick = () => {
+      if(span && span.parentNode) span.outerHTML = span.innerText;
+      card.remove();
+    };
+    document.getElementById('notesList').prepend(card);
+    document.body.classList.add('notes-open');
+  }
+
+  function handleToolbarAction(e) {
+    const act = e.target.dataset.action;
+    if (!act) return;
+    if (act === 'hl') {
+      if (activeHighlightSpan) {
+        if (activeHighlightSpan.classList.contains('hl-brown')) {
+          activeHighlightSpan.classList.remove('hl-brown');
+          activeHighlightSpan.classList.add('hl-rose');
+        } else if (activeHighlightSpan.classList.contains('hl-rose')) {
+          // 已经是玫红，不处理
+        } else {
+          activeHighlightSpan.classList.add('hl-brown');
+        }
+        window.getSelection().removeAllRanges();
+      } else if (currentRange && !currentRange.collapsed) {
+        applyHighlightToRange();
+      }
+    } else if (act === 'note') {
+      if (activeHighlightSpan) {
+        if (!activeHighlightSpan.classList.contains('hl-blue')) {
+          activeHighlightSpan.classList.remove('hl-brown', 'hl-rose');
+          activeHighlightSpan.classList.add('hl-blue');
+        }
+        createNoteFromSpan(activeHighlightSpan);
+      } else if (currentRange && !currentRange.collapsed) {
+        const newSpan = applyHighlightToRange();
+        if (newSpan) {
+          newSpan.classList.remove('hl-brown', 'hl-rose');
+          newSpan.classList.add('hl-blue');
+          createNoteFromSpan(newSpan);
+        } else {
+          // fallback: 直接wrap蓝色
+          const span = document.createElement('span');
+          span.className = 'hl-blue';
+          try { currentRange.surroundContents(span); createNoteFromSpan(span); } catch(e) {}
+        }
+      }
+    } else if (act === 'clearHL') {
+      clearHighlightSpan();
+    }
+    document.getElementById('selectionToolbar').hidden = true;
+    activeHighlightSpan = null;
+    currentRange = null;
+  }
+
+  function bindEvents() {
+    document.getElementById('saveBtn').onclick = saveAll;
+    document.getElementById('clearBtn').onclick = clearAll;
+    document.getElementById('finishBtn').onclick = toggleFinishMode;
+    document.getElementById('notesBtn').onclick = () => document.body.classList.toggle('notes-open');
+    document.getElementById('closeNotes').onclick = () => document.body.classList.remove('notes-open');
+    document.getElementById('transcriptBtn').onclick = () => {
+      document.getElementById('splitLayout').classList.toggle('split-view');
+      document.getElementById('transcriptFull').innerHTML = TRANSCRIPT_HTML;
+    };
+    document.getElementById('settingsBtn').onclick = () => {
+      const p = document.getElementById('settingsPanel');
+      const o = document.getElementById('overlay');
+      const vis = p.style.display === 'block';
+      p.style.display = vis ? 'none' : 'block';
+      o.style.display = vis ? 'none' : 'block';
+    };
+    document.querySelectorAll('.settings-option[data-size]').forEach(btn => btn.addEventListener('click',()=>{ document.documentElement.className = `font-${btn.dataset.size}`; saveAll(); }));
+    document.querySelectorAll('.settings-option[data-mode]').forEach(btn => btn.addEventListener('click',()=>{ document.body.classList.toggle('dark', btn.dataset.mode === 'dark'); saveAll(); }));
+    document.getElementById('overlay').onclick = () => { document.getElementById('settingsPanel').style.display='none'; document.getElementById('overlay').style.display='none'; };
+    document.getElementById('testContainer').addEventListener('input', (e) => { if(e.target.classList.contains('blank-input')) updateNavStyle(); });
+    // 监听高亮span点击（事件委托）
+    document.getElementById('testContainer').addEventListener('click', onSpanClick);
+    document.addEventListener('mouseup', (e) => {
+      if (!e.target.closest('#selectionToolbar')) {
+        setTimeout(() => {
+          if (!activeHighlightSpan) handleSelection();
+        }, 10);
+      }
+    });
+    document.getElementById('selectionToolbar')?.addEventListener('click', handleToolbarAction);
+  }
+
+  function initSplitter() {
+    const splitter = document.getElementById('splitter');
+    let drag = false;
+    splitter.addEventListener('mousedown', () => { drag=true; document.body.style.cursor='col-resize'; });
+    window.addEventListener('mouseup', () => { drag=false; document.body.style.cursor=''; });
+    window.addEventListener('mousemove', (e) => {
+      if(!drag) return;
+      const layout = document.getElementById('splitLayout');
+      const left = document.getElementById('leftPane');
+      const right = document.getElementById('rightPane');
+      const total = layout.offsetWidth;
+      let newLeft = e.clientX;
+      if(newLeft<200) newLeft=200;
+      if(newLeft>total-250) newLeft=total-250;
+      left.style.flexBasis = `${newLeft}px`;
+      right.style.flexBasis = `${total - newLeft - splitter.offsetWidth}px`;
+    });
+  }
+
+  function init() {
+    renderQuestions();
+    buildNav();
+    initAudio();
+    bindEvents();
+    initSplitter();
+    loadProgress();
+    startTimer();
+    updateNavStyle();
+  }
+  init();
+</script>
+</body>
+</html>
