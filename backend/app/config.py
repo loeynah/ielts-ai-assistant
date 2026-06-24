@@ -46,7 +46,6 @@ DEFAULT_USER_PROFILE = ADMIN_USER_PROFILE
 
 
 def is_llm_key_configured(key: str | None = None) -> bool:
-    """Key 须为非空 ASCII 字符串（SiliconFlow / DeepSeek 官方 Key 均为 sk- 等英文）"""
     k = (key if key is not None else DEEPSEEK_API_KEY).strip()
     if not k or k.lower() in _ADMIN_PLACEHOLDERS:
         return False

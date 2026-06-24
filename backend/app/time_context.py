@@ -12,7 +12,6 @@ def get_current_date_iso() -> str:
 
 
 def days_until(exam_date_iso: str | None) -> int | None:
-    """距考试日天数；未设置或格式无效时返回 None"""
     if not exam_date_iso or not isinstance(exam_date_iso, str):
         return None
     text = exam_date_iso.strip()

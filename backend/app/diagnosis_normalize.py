@@ -81,7 +81,6 @@ def normalize_diagnosis_result(
     *,
     mode: str,
 ) -> list[dict]:
-    """将 LLM 返回的 items 数组或 {题号: {...}} 字典统一为前端 items 列表"""
     raw_items = result.get("items") or result.get("diagnosis") or result.get("questions") or {}
     by_num: dict[str, dict] = {}
 

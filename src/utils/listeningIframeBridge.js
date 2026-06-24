@@ -127,7 +127,6 @@ export function scrollToQuestion(iframe, qId) {
       input.focus()
     }
   } catch {
-    /* same-origin */
   }
 }
 

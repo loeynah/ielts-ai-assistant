@@ -96,7 +96,6 @@ def _welcome_inbox(conn, username: str, *, blank: bool = False) -> None:
 
 
 def seed_admin_user() -> None:
-    """首次启动写入 .env 中的 admin 账号"""
     conn = get_conn()
     try:
         if _get_user_row(conn, ADMIN_USERNAME):
@@ -193,7 +192,6 @@ def verify_user_password(username: str, password: str) -> bool:
 
 
 def init_user(username: str) -> dict:
-    """兼容旧调用 — 若用户不存在则创建（无密码，仅供内部）"""
     conn = get_conn()
     try:
         if _get_user_row(conn, username):

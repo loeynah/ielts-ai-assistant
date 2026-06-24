@@ -15,7 +15,6 @@ import {
 import { requestWritingGrade } from '@/api/writingGrading'
 import { useUserStore } from '@/stores/user'
 
-/** @type {import('vue').Ref<'empty' | 'locked' | 'active'>} */
 const examState = ref('empty')
 
 const selectedId = ref(null)

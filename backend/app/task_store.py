@@ -38,7 +38,6 @@ def get_tasks(username: str) -> list[dict]:
 
 
 def seed_admin_tasks(username: str) -> None:
-    """仅为 admin 种子账号写入默认任务；新注册用户保持空列表"""
     if get_tasks(username):
         return
     tasks = [
