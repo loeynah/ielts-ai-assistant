@@ -1,8 +1,3 @@
-"""
-IELTS AI Prep Companion — FastAPI 全栈入口
-
-启动: cd backend && uvicorn main:app --reload --port 8000
-"""
 from __future__ import annotations
 
 from contextlib import asynccontextmanager

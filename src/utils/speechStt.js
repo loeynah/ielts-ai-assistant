@@ -1,7 +1,12 @@
-/** 浏览器实时语音转写（Web Speech API）— 支持长段连续识别 */
-
 export function isSpeechRecognitionSupported() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+}
+
+/** 上一段 STT 完全 stop 后再开下一段（组件侧 await，不在 start 内 await） */
+let pendingStop = Promise.resolve()
+
+export function waitForSttIdle() {
+  return pendingStop
 }
 
 export function createLiveTranscriber(lang = 'en-US') {
@@ -15,6 +20,7 @@ export function createLiveTranscriber(lang = 'en-US') {
   let recognition = null
   let stopCallback = null
   let stopTimer = null
+  let restartTimer = null
 
   function getCombinedText() {
     const base = finalText.trim()
@@ -27,6 +33,47 @@ export function createLiveTranscriber(lang = 'en-US') {
     const piece = String(text || '').trim()
     if (!piece) return
     finalText = finalText ? `${finalText.trimEnd()} ${piece}` : piece
+  }
+
+  function clearRestartTimer() {
+    if (restartTimer) {
+      clearTimeout(restartTimer)
+      restartTimer = null
+    }
+  }
+
+  function finishStop(text) {
+    clearRestartTimer()
+    if (stopTimer) {
+      clearTimeout(stopTimer)
+      stopTimer = null
+    }
+    stopping = false
+    listening = false
+    recognition = null
+    const cb = stopCallback
+    stopCallback = null
+    if (cb) cb(text)
+  }
+
+  function scheduleRestart(rec) {
+    clearRestartTimer()
+    restartTimer = window.setTimeout(() => {
+      restartTimer = null
+      if (!listening || stopping) return
+      try {
+        rec.start()
+      } catch {
+        if (!listening || stopping) return
+        try {
+          recognition = buildRecognition()
+          recognition.start()
+        } catch {
+          listening = false
+          recognition = null
+        }
+      }
+    }, 200)
   }
 
   function buildRecognition() {
@@ -48,76 +95,54 @@ export function createLiveTranscriber(lang = 'en-US') {
     }
 
     rec.onerror = () => {
-      /* onend 会负责重启；静默处理 no-speech / network 等 */
+      /* onend 负责恢复或结束 */
     }
 
     rec.onend = () => {
-      if (listening) {
-        window.setTimeout(() => {
-          if (!listening) return
-          try {
-            rec.start()
-          } catch {
-            if (listening) {
-              recognition = buildRecognition()
-              try {
-                recognition.start()
-              } catch {
-                /* ignore */
-              }
-            }
-          }
-        }, 120)
-        return
-      }
-
       if (stopping) {
         appendFinal(interimText)
         interimText = ''
         finishStop(getCombinedText())
+        return
       }
+      if (listening) scheduleRestart(rec)
     }
 
     return rec
   }
 
-  function finishStop(text) {
-    if (stopTimer) {
-      clearTimeout(stopTimer)
-      stopTimer = null
-    }
-    stopping = false
-    if (stopCallback) {
-      stopCallback(text)
-      stopCallback = null
-    }
-  }
-
   return {
+    /** 须在用户点击回调链中同步调用，不可在其前 await */
     start() {
-      if (listening) return
+      if (listening) return true
+
       finalText = ''
       interimText = ''
       listening = true
       stopping = false
+      clearRestartTimer()
       recognition = buildRecognition()
       try {
         recognition.start()
+        return true
       } catch {
         listening = false
         recognition = null
+        return false
       }
     },
 
     stop() {
       const textNow = getCombinedText()
-      if (!listening && !stopping) return Promise.resolve(textNow)
+      if (!listening && !stopping) {
+        return Promise.resolve(textNow)
+      }
 
-      return new Promise((resolve) => {
-        if (stopping && stopCallback) {
+      const stopPromise = new Promise((resolve) => {
+        if (stopping) {
           const prev = stopCallback
           stopCallback = (text) => {
-            prev(text)
+            if (prev) prev(text)
             resolve(text)
           }
           return
@@ -125,10 +150,18 @@ export function createLiveTranscriber(lang = 'en-US') {
 
         stopping = true
         listening = false
+        clearRestartTimer()
+
+        const rec = recognition
         stopCallback = resolve
 
+        if (!rec) {
+          finishStop(getCombinedText())
+          return
+        }
+
         try {
-          recognition?.stop()
+          rec.stop()
         } catch {
           finishStop(getCombinedText())
           return
@@ -136,8 +169,13 @@ export function createLiveTranscriber(lang = 'en-US') {
 
         stopTimer = window.setTimeout(() => {
           if (stopCallback) finishStop(getCombinedText())
-        }, 1200)
+        }, 2000)
       })
+
+      pendingStop = stopPromise.finally(() => {
+        pendingStop = Promise.resolve()
+      })
+      return stopPromise
     },
 
     getText() {

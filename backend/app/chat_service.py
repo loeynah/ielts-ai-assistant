@@ -1,4 +1,3 @@
-"""主页 AI 智能管家 — 时间注入 + 两阶段备考计划 + 官方科普"""
 from __future__ import annotations
 
 from app.chat_parser import parse_chat_response

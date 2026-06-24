@@ -10,7 +10,7 @@ const emit = defineEmits(['confirm'])
 
 <template>
   <div class="relative flex min-h-[580px] items-center justify-center overflow-hidden rounded-[28px]">
-    <!-- 模糊占位背景 -->
+
     <div
       class="pointer-events-none absolute inset-0 bg-gradient-to-br from-[var(--color-surface-muted)] via-white to-[var(--color-beige)] opacity-90"
       aria-hidden="true"
@@ -20,7 +20,7 @@ const emit = defineEmits(['confirm'])
       aria-hidden="true"
     />
 
-    <!-- 考前确认卡片 -->
+
     <div
       class="relative z-10 mx-4 w-full max-w-lg rounded-[28px] bg-white p-8 shadow-[0_24px_64px_-16px_rgb(91_141_239_/_0.22)] ring-1 ring-slate-100"
     >

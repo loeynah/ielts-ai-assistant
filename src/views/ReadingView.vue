@@ -36,7 +36,7 @@ function selectLesson(id) {
       <p class="mt-2 text-slate-500">真题训练 · AI深度诊断</p>
     </header>
 
-    <!-- 第一级：Passage -->
+
     <div>
       <p class="mb-3 text-xs font-medium uppercase tracking-wider text-slate-400">选择篇章</p>
       <div class="flex flex-wrap gap-3">
@@ -57,7 +57,7 @@ function selectLesson(id) {
       </div>
     </div>
 
-    <!-- 第二级：Lesson -->
+
     <div v-if="activePassage">
       <p class="mb-3 text-xs font-medium uppercase tracking-wider text-slate-400">精选真题</p>
       <div class="flex flex-wrap gap-3">

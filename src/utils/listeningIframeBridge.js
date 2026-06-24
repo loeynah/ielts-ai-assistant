@@ -1,4 +1,3 @@
-/** 注入 iframe 内样式：隐藏声明、重复音频条、底部原生答题卡 */
 export const LISTENING_IFRAME_CSS = `
   .header,
   .audio-sticky,
@@ -55,7 +54,6 @@ export const LISTENING_IFRAME_CSS = `
 
 const DISCLAIMER_RE = /虾滑|@Listening|禁止商用|倒卖和引流/
 
-/** 移除免责声明等文本噪音 */
 export function purgeDisclaimerNodes(doc) {
   if (!doc?.body) return
 
@@ -174,7 +172,6 @@ function applyInputHighlights(doc, results) {
   })
 }
 
-/** 提交客观题：触发批改 + 红绿边框 + 返回得分 */
 export function submitObjectiveAnswers(iframe) {
   try {
     const doc = iframe.contentDocument
@@ -224,7 +221,6 @@ function wrongAnswersFromResults(results) {
   return wrong
 }
 
-/** 抓取全部题目作答供 AI 逐题诊断 */
 export function collectAllAnswers(iframe) {
   try {
     const doc = iframe.contentDocument
@@ -242,7 +238,6 @@ export function collectAllAnswers(iframe) {
   }
 }
 
-/** 抓取错题供 AI 诊断（不重复切换批改状态） */
 export function collectWrongAnswers(iframe) {
   try {
     const doc = iframe.contentDocument

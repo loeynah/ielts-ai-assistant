@@ -1,4 +1,3 @@
-/** 将题组扁平化为有序题目列表 */
 export function flattenReadingQuestions(groups) {
   const list = []
   for (const g of groups || []) {
@@ -14,7 +13,6 @@ export function flattenReadingQuestions(groups) {
   return sortByNum(list)
 }
 
-/** 阅读：从答案键构建全部作答 */
 export function buildReadingAllAnswers(userAnswers, answerKey) {
   const all = {}
   for (const [qid, expected] of Object.entries(answerKey || {})) {
@@ -27,7 +25,6 @@ export function buildReadingAllAnswers(userAnswers, answerKey) {
   return all
 }
 
-/** 听力：从 iframe 批改结果构建题目元数据 */
 export function buildListeningQuestionMeta(allAnswers) {
   return sortByNum(
     Object.keys(allAnswers || {}).map((qid) => ({
@@ -65,7 +62,6 @@ function defaultAnalysis(isCorrect, user, correct, mode) {
   return `错因定位：你将「${user || '未作答'}」误判为正确，正确答案为「${correct}」。`
 }
 
-/** 将 API 返回与本地全量题目合并，保证题号 Tab 与刷题区一致 */
 export function normalizeDiagnosisItems(apiItems, questionMeta, allAnswers, mode = 'reading') {
   const meta = questionMeta?.length
     ? questionMeta

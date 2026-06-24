@@ -1,4 +1,3 @@
-"""写作四维度阅卷 — 字数硬性惩罚 + 严厉官方 JSON"""
 from __future__ import annotations
 
 from app.grading_rules import apply_writing_penalties, count_words

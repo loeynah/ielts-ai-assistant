@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { Mic, Square, EyeOff } from 'lucide-vue-next'
-import { createLiveTranscriber } from '@/utils/speechStt'
+import { createLiveTranscriber, waitForSttIdle } from '@/utils/speechStt'
 
 const props = defineProps({
   maxSeconds: { type: Number, default: 30 },
@@ -12,7 +12,7 @@ const props = defineProps({
 
 const emit = defineEmits(['recorded', 'timeout'])
 
-const phase = ref('idle') // idle | recording
+const phase = ref('idle')
 const secondsLeft = ref(0)
 const secondsElapsed = ref(0)
 const waveHeights = ref(Array.from({ length: 12 }, () => 20))
@@ -42,16 +42,35 @@ function clearTimers() {
   waveTimer = null
 }
 
+function releaseStream() {
+  if (mediaRecorder?.stream) {
+    mediaRecorder.stream.getTracks().forEach((t) => t.stop())
+  }
+}
+
 async function startRecording() {
   if (props.disabled || phase.value === 'recording') return
+
+  await waitForSttIdle()
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     mediaRecorder = new MediaRecorder(stream)
     audioChunks = []
     mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data)
     mediaRecorder.start()
+
     transcriber = createLiveTranscriber()
-    transcriber?.start()
+    const sttOk = transcriber?.start() ?? false
+    if (!sttOk) {
+      transcriber = null
+      mediaRecorder.stop()
+      releaseStream()
+      mediaRecorder = null
+      alert('语音转写启动失败，请使用 Chrome 浏览器并重试。')
+      return
+    }
+
     phase.value = 'recording'
     recordStartedAt = Date.now()
     secondsLeft.value = props.maxSeconds
@@ -87,7 +106,7 @@ function stopRecording(timedOut = false) {
 
     const finish = (transcript) => {
       transcriber = null
-      mediaRecorder.stream.getTracks().forEach((t) => t.stop())
+      releaseStream()
       phase.value = 'idle'
       emit('recorded', { blob, url, duration, transcript: transcript || '' })
       if (timedOut) emit('timeout')
@@ -108,9 +127,11 @@ function stopRecording(timedOut = false) {
 
 onUnmounted(() => {
   clearTimers()
-  if (mediaRecorder?.stream) {
-    mediaRecorder.stream.getTracks().forEach((t) => t.stop())
+  if (transcriber) {
+    transcriber.stop().catch(() => {})
+    transcriber = null
   }
+  releaseStream()
 })
 
 watch(

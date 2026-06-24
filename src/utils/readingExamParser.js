@@ -1,4 +1,3 @@
-/** 清洗文章 HTML，移除拖拽占位等交互噪音 */
 export function cleanPassageHtml(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html')
   doc
@@ -209,7 +208,6 @@ function parseDropTargetQuestions(doc, g, questionDisplayMap, wordPoolOptions, q
   }
 }
 
-/** 将 questionGroups 解析为原生组件可用的结构 */
 export function parseQuestionGroups(exam) {
   const { questionGroups = [], questionDisplayMap = {} } = exam
   const groups = []

@@ -1,4 +1,3 @@
-"""听力切片诊断 — 严厉判分 + 动态题号结构化 JSON"""
 from __future__ import annotations
 
 import json

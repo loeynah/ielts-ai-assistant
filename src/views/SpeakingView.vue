@@ -29,7 +29,6 @@ const history = ref([])
 const userStore = useUserStore()
 const scrollToChart = ref(false)
 
-/** exam flow: select → part1 → part2_prep → part2_record → part3 → done → report */
 const examPhase = ref('select')
 const part1Index = ref(0)
 const part3Index = ref(0)
@@ -233,9 +232,9 @@ function onHistoryUpdated(list) {
       </button>
     </div>
 
-    <!-- 标准模拟考试 -->
+
     <template v-if="activeMode === 'exam'">
-      <!-- PART 进度标签 -->
+
       <div v-if="examPhase !== 'select'" class="flex flex-wrap gap-2">
         <span
           v-for="tab in partTabs"
@@ -251,7 +250,7 @@ function onHistoryUpdated(list) {
         </span>
       </div>
 
-      <!-- 选卷 -->
+
       <div v-if="examPhase === 'select'" class="grid gap-4 sm:grid-cols-3">
         <button
           v-for="item in SPEAKING_EXAMS"
@@ -269,7 +268,7 @@ function onHistoryUpdated(list) {
         </button>
       </div>
 
-      <!-- Part 1 -->
+
       <SoftCard
         v-else-if="examPhase === 'part1'"
         title="Part 1 基础问答"
@@ -283,6 +282,7 @@ function onHistoryUpdated(list) {
         </div>
         <div class="mt-6">
           <SpeakingRecorder
+            :key="`part1-${selectedExamId}-${part1Index}`"
             :max-seconds="recorderSeconds"
             :label="`回答第 ${part1Index + 1} 题`"
             @recorded="onPart1Recorded"
@@ -291,7 +291,7 @@ function onHistoryUpdated(list) {
         </div>
       </SoftCard>
 
-      <!-- Part 2 准备 -->
+
       <SoftCard
         v-else-if="examPhase === 'part2_prep'"
         title="Part 2 话题卡 · 准备时间"
@@ -331,7 +331,7 @@ function onHistoryUpdated(list) {
         </div>
       </SoftCard>
 
-      <!-- Part 2 录音 -->
+
       <SoftCard
         v-else-if="examPhase === 'part2_record'"
         title="Part 2 话题盲盒"
@@ -352,6 +352,7 @@ function onHistoryUpdated(list) {
         </div>
         <div class="mt-6">
           <SpeakingRecorder
+            :key="`part2-${selectedExamId}`"
             :max-seconds="SPEAKING_TIMERS.part2Record"
             label="开始 Part 2 录音"
             @recorded="onPart2Recorded"
@@ -360,7 +361,7 @@ function onHistoryUpdated(list) {
         </div>
       </SoftCard>
 
-      <!-- Part 3 -->
+
       <SoftCard
         v-else-if="examPhase === 'part3'"
         title="Part 3 深度追问"
@@ -374,6 +375,7 @@ function onHistoryUpdated(list) {
         </div>
         <div class="mt-6">
           <SpeakingRecorder
+            :key="`part3-${selectedExamId}-${part3Index}`"
             :max-seconds="SPEAKING_TIMERS.part3Answer"
             :label="`回答 Part 3 第 ${part3Index + 1} 题`"
             @recorded="onPart3Recorded"
@@ -382,7 +384,7 @@ function onHistoryUpdated(list) {
         </div>
       </SoftCard>
 
-      <!-- 交卷 -->
+
       <SoftCard
         v-else-if="examPhase === 'done'"
         title="全部 Part 已完成"
@@ -403,7 +405,7 @@ function onHistoryUpdated(list) {
         </div>
       </SoftCard>
 
-      <!-- 报告 -->
+
       <Transition name="fade">
         <div v-if="examPhase === 'report' && report" class="space-y-4">
           <SpeakingExamReport :result="report" />
@@ -419,7 +421,7 @@ function onHistoryUpdated(list) {
       </Transition>
     </template>
 
-    <!-- 自定义训练 -->
+
     <template v-else>
       <SpeakingPracticeChat
         :exam-id="selectedExamId"

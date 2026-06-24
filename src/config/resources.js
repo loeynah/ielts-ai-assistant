@@ -1,4 +1,3 @@
-/** 模拟 AI 计划 JSON（对接 FastAPI 前的占位） */
 export const mockDailyPlan = {
   plan_id: '20260604_01',
   tasks: {

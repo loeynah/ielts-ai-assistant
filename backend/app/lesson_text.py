@@ -1,4 +1,3 @@
-"""从本地听力 HTML/PDF 提取纯文本，供 LLM 上下文注入"""
 from __future__ import annotations
 
 import re

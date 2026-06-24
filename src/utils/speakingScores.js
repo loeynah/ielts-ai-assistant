@@ -1,4 +1,3 @@
-/** 口语四维度分 — 统一 FC/LR/GRA/P 大小写读取 */
 export function normalizeSpeakingSubScores(raw, overall = 0) {
   const s = raw || {}
   const base = Number(overall) || 0

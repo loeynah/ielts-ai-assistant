@@ -57,7 +57,7 @@ onUnmounted(() => {
     class="workspace-shell flex min-h-[580px] items-stretch overflow-hidden rounded-[28px] bg-white shadow-[var(--shadow-soft-lg)] ring-1 ring-slate-100/80 select-none"
     :class="isDragging ? 'cursor-col-resize' : ''"
   >
-    <!-- 左栏：纯白等高卡片 -->
+
     <div
       class="flex min-h-0 min-w-0 flex-col self-stretch overflow-hidden"
       :style="{ width: `${leftPercent}%` }"
@@ -65,7 +65,7 @@ onUnmounted(() => {
       <WritingPromptPanel :task="task" class="h-full" />
     </div>
 
-    <!-- 可拖动分隔条 -->
+
     <div
       class="relative z-10 flex w-2 shrink-0 cursor-col-resize items-stretch self-stretch bg-slate-50 hover:bg-[var(--color-accent-soft)]"
       @mousedown.prevent="startDrag"
@@ -75,7 +75,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 右栏：答题沙盒等高卡片 -->
+
     <div class="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden">
       <WritingEditorPanel
         ref="editorRef"

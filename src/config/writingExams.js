@@ -1,4 +1,3 @@
-/** 写作 Task 1 图表 — assets/writing/ */
 const ASSET = '/assets/writing'
 
 function task1(id, title, prompt, imageFile, minutes = 20) {
@@ -32,7 +31,6 @@ function task2(id, title, topic, minutes = 40) {
   }
 }
 
-/** 三套标准机考套题 */
 export const WRITING_EXAM_SETS = [
   {
     id: 'set-1',
@@ -84,7 +82,6 @@ export const WRITING_EXAM_SETS = [
   },
 ]
 
-/** 两篇独立大作文演示模版 */
 export const WRITING_DEMO_TASK2 = [
   task2(
     'demo-driverless',
@@ -112,7 +109,6 @@ export function isDemoId(id) {
   return WRITING_DEMO_TASK2.some((t) => t.id === id)
 }
 
-/** 顶部一级选题：3 套题 + 2 篇独立大作文，平铺同一行 */
 export const WRITING_MENU_ITEMS = [
   ...WRITING_EXAM_SETS.map((s) => ({
     id: s.id,

@@ -1,4 +1,3 @@
-"""听/读诊断 LLM 输出归一化 — 动态题号字典 → items 数组 + 客观对错强制对齐"""
 from __future__ import annotations
 
 from app.diagnosis_items import display_num_for, ordered_question_ids

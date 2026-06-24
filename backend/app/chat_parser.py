@@ -1,4 +1,3 @@
-"""解析 LLM 回复中的 META / TODAY_TASKS 结构化块"""
 from __future__ import annotations
 
 import re

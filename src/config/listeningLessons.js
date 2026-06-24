@@ -1,4 +1,3 @@
-/** 本地听力题库（assets/listening） */
 export const LISTENING_BASE = '/assets/listening'
 
 export const listeningLessons = [
@@ -48,7 +47,6 @@ export function getLessonById(lessonId) {
   return listeningLessons.find((l) => l.lessonId === lessonId) || listeningLessons[0]
 }
 
-/** 拼接本地静态资源 URL（路径含空格需编码） */
 export function lessonAssetUrl(lesson, fileName) {
   const folder = encodeURIComponent(lesson.folder)
   const file = encodeURIComponent(fileName)

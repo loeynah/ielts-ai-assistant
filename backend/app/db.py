@@ -1,4 +1,3 @@
-"""SQLite 本地持久化 — 用户、会话、通知、练习记录、任务"""
 from __future__ import annotations
 
 import sqlite3

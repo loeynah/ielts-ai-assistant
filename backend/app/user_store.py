@@ -1,4 +1,3 @@
-"""SQLite 用户画像 + 批改通知 + 会话"""
 from __future__ import annotations
 
 import json

@@ -1,4 +1,3 @@
-"""密码哈希 — PBKDF2，无第三方依赖"""
 from __future__ import annotations
 
 import hashlib

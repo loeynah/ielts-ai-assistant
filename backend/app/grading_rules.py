@@ -1,4 +1,3 @@
-"""雅思官方对齐的硬性判分规则 — 后端强制熔断，不依赖 LLM 自觉"""
 from __future__ import annotations
 
 import re

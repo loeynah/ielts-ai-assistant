@@ -29,7 +29,6 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  /** 登录后并发拉取画像、通知、任务清单 */
   async function initializeAfterLogin() {
     const tasksStore = useTasksStore()
     await Promise.all([refresh(), tasksStore.loadFromServer()])

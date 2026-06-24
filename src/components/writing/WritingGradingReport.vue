@@ -38,7 +38,7 @@ const dimensions = computed(() => [
       </div>
     </div>
 
-    <!-- 四维度进度条 -->
+
     <div class="mb-6 space-y-3">
       <div v-for="dim in dimensions" :key="dim.key">
         <div class="mb-1 flex justify-between text-xs">
@@ -55,7 +55,7 @@ const dimensions = computed(() => [
       </div>
     </div>
 
-    <!-- 优缺点剖析 -->
+
     <div v-if="result.strengths?.length || result.weaknesses?.length" class="mb-6 grid gap-4 md:grid-cols-2">
       <div v-if="result.strengths?.length" class="rounded-3xl bg-emerald-50/50 p-5">
         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">长处</p>
@@ -71,7 +71,7 @@ const dimensions = computed(() => [
       </div>
     </div>
 
-    <!-- 语法高亮对照 -->
+
     <div v-if="result.grammar_highlights?.length" class="mb-6">
       <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">语法修正对照</p>
       <ul class="space-y-2">
@@ -90,7 +90,7 @@ const dimensions = computed(() => [
       </ul>
     </div>
 
-    <!-- AI 范文 -->
+
     <div class="mb-5 rounded-3xl bg-gradient-to-br from-[var(--color-accent-soft)] to-[var(--color-beige)] p-5">
       <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-accent)]">
         AI 高分优化范文
@@ -98,7 +98,7 @@ const dimensions = computed(() => [
       <p class="whitespace-pre-line text-sm leading-relaxed text-slate-700">{{ result.polished_essay }}</p>
     </div>
 
-    <!-- 综合建议 -->
+
     <div class="flex gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-100">
       <Sparkles class="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-accent)]" />
       <p class="text-sm leading-relaxed text-slate-600">{{ result.general_advice }}</p>

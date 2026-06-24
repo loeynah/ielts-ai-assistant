@@ -1,9 +1,7 @@
-"""每日任务清单持久化"""
 from __future__ import annotations
 
 from app.db import get_conn
 
-# admin 种子账号默认今日任务（新注册用户不写入，保持空白）
 ADMIN_DEFAULT_TASKS = [
     ("listening", "精听真题 Section 2 一篇并记录错题"),
     ("reading", "完成 Passage 1 并在系统中调用 AI 解析长难句"),

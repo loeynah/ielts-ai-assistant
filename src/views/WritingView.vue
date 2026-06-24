@@ -168,7 +168,7 @@ onUnmounted(clearTimer)
       @select-task="onSelectTask"
     />
 
-    <!-- 三阶段状态机 -->
+
     <Transition name="fade" mode="out-in">
       <WritingEmptyState v-if="examState === 'empty'" key="empty" />
 

@@ -1,4 +1,3 @@
-"""口语批改 — 严厉考官标准 + 字数熔断 + STT 真实文本强制对齐"""
 from __future__ import annotations
 
 import json
