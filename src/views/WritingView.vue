@@ -15,6 +15,7 @@ import {
 import { requestWritingGrade } from '@/api/writingGrading'
 import { useUserStore } from '@/stores/user'
 
+/** @type {import('vue').Ref<'empty' | 'locked' | 'active'>} */
 const examState = ref('empty')
 
 const selectedId = ref(null)
@@ -167,7 +168,7 @@ onUnmounted(clearTimer)
       @select-task="onSelectTask"
     />
 
-
+    <!-- 三阶段状态机 -->
     <Transition name="fade" mode="out-in">
       <WritingEmptyState v-if="examState === 'empty'" key="empty" />
 

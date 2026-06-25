@@ -1,3 +1,4 @@
+"""诊断 items 合并 — 保证与前端题号列表绝对同步，客观对错强制对齐"""
 from __future__ import annotations
 
 from app.grading_rules import objective_is_correct

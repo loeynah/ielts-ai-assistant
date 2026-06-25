@@ -2,6 +2,7 @@ export function isSpeechRecognitionSupported() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 }
 
+/** 上一段 STT 完全 stop 后再允许下一段 start（Part1 多题连续录音） */
 let pendingStop = Promise.resolve()
 
 export function waitForSttIdle() {
@@ -93,7 +94,9 @@ export function createLiveTranscriber(lang = 'en-US') {
       interimText = interim
     }
 
-    rec.onerror = () => {}
+    rec.onerror = () => {
+      /* onend 负责恢复或结束 */
+    }
 
     rec.onend = () => {
       if (stopping) {
@@ -109,6 +112,7 @@ export function createLiveTranscriber(lang = 'en-US') {
   }
 
   return {
+    /** 须在用户点击回调链中同步调用，不可在其前 await */
     start() {
       if (listening) return true
 

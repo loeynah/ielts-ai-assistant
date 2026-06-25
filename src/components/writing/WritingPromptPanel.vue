@@ -11,7 +11,7 @@ const lightboxOpen = ref(false)
 
 <template>
   <div class="flex h-full min-h-0 flex-col bg-white">
-
+    <!-- 机考引导词：纯白材质 + 高对比 -->
     <div class="shrink-0 border-b border-slate-100 bg-white px-6 py-5">
       <p class="text-base font-bold tracking-wide text-slate-900">
         {{ task.type === 'task1' ? 'WRITING TASK 1' : 'WRITING TASK 2' }}
@@ -24,13 +24,13 @@ const lightboxOpen = ref(false)
       </p>
     </div>
 
-
+    <!-- 题干 + 图表：flex 撑满剩余高度 -->
     <div class="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-6">
       <p class="shrink-0 whitespace-pre-line text-[15px] leading-relaxed text-slate-800">
         {{ task.prompt }}
       </p>
 
-
+      <!-- Task 1 图表：垂直居中 + 大留白 -->
       <div
         v-if="task.imageUrl"
         class="flex min-h-0 flex-1 flex-col items-center justify-center py-8"

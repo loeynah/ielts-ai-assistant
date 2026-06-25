@@ -1,5 +1,6 @@
 const EXAM_BASE = '/assets/reading-exams'
 
+/** 从 zyz 阅读题库 JS 文件动态加载真题数据 */
 export async function loadReadingExam(examId) {
   const res = await fetch(`${EXAM_BASE}/${examId}.js`)
   if (!res.ok) throw new Error(`无法加载阅读真题: ${examId}`)

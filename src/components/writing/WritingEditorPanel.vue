@@ -36,7 +36,7 @@ defineExpose({ focusEditor })
 
 <template>
   <div class="flex h-full min-h-0 flex-col bg-white">
-
+    <!-- 倒计时 -->
     <div
       class="flex shrink-0 items-center justify-end border-b border-slate-100 bg-white px-6 py-4"
     >
@@ -53,7 +53,7 @@ defineExpose({ focusEditor })
       </div>
     </div>
 
-
+    <!-- 编辑器 -->
     <div class="relative flex min-h-0 flex-1 flex-col px-6 pt-5">
       <textarea
         ref="textareaRef"
@@ -73,7 +73,7 @@ defineExpose({ focusEditor })
       </p>
     </div>
 
-
+    <!-- 状态条：固定底边距防截断 -->
     <div
       class="mt-auto flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-white px-6 py-4 pb-6"
     >

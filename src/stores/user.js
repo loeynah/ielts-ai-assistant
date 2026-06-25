@@ -29,6 +29,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  /** 登录后并发拉取画像、通知、任务清单 */
   async function initializeAfterLogin() {
     const tasksStore = useTasksStore()
     await Promise.all([refresh(), tasksStore.loadFromServer()])
@@ -81,6 +82,7 @@ export const useUserStore = defineStore('user', () => {
     if (target_score != null) await updateTargetScore(target_score)
   }
 
+  /** 后端不可用时的离线兜底（正常流程由服务端 push_inbox） */
   function recordGrade(module, score, { title, meta, icon }) {
     const auth = useAuthStore()
     const base = profile.value || auth.user

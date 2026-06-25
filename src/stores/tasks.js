@@ -32,6 +32,7 @@ export const useTasksStore = defineStore('tasks', () => {
       const saved = await replaceTasks(tasks.value)
       if (Array.isArray(saved)) tasks.value = saved
     } catch {
+      /* 离线时仅保留内存态 */
     }
   }
 

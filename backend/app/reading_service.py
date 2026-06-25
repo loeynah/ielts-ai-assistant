@@ -1,3 +1,4 @@
+"""阅读切片诊断 + 随身助理 — 严厉判分 + 动态题号结构化 JSON"""
 from __future__ import annotations
 
 import json

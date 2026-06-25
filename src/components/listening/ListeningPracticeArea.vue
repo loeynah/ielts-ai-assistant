@@ -198,14 +198,14 @@ onUnmounted(() => {
 <template>
   <Transition name="fade-up" appear>
     <div class="soft-card w-full overflow-hidden">
-
+      <!-- 上：原生音频控制塔 -->
       <ListeningAudioStrip
         :audio-src="audioUrl"
         :title="lesson.title"
         :section="lesson.section"
       />
 
-
+      <!-- 中：精简 iframe 填空区 -->
       <div class="listening-iframe-viewport relative w-full overflow-hidden bg-white">
         <iframe
           ref="iframeRef"
@@ -218,7 +218,7 @@ onUnmounted(() => {
         />
       </div>
 
-
+      <!-- 下：原生交卷 + AI 诊断 -->
       <ListeningActionBar
         :timer-text="timerText"
         :questions="questions"

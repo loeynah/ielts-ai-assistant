@@ -1,3 +1,4 @@
+/** 归一化答案便于比对 */
 export function normalizeAnswer(val) {
   return String(val ?? '')
     .trim()
@@ -5,12 +6,14 @@ export function normalizeAnswer(val) {
     .replace(/\s+/g, ' ')
 }
 
+/** 估算单篇 Band（演示用，后续可对接官方换算表） */
 export function estimateBand(correct, total) {
   if (!total) return 0
   const raw = (correct / total) * 9
   return Math.round(raw * 2) / 2
 }
 
+/** 批改阅读客观题 */
 export function gradeReadingAnswers(userAnswers, answerKey) {
   const results = {}
   let correct = 0

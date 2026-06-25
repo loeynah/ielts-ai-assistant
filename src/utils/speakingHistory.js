@@ -14,6 +14,7 @@ function toChartRecord(item) {
   }
 }
 
+/** 从后端拉取口语练习历史（走势图数据源） */
 export async function loadSpeakingHistory() {
   try {
     const list = await fetchModuleHistory('speaking')

@@ -1,3 +1,4 @@
+"""雅思分数工具 — 仅允许 0.5 进制"""
 from __future__ import annotations
 
 

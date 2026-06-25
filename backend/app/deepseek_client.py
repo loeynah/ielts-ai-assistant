@@ -1,3 +1,4 @@
+"""DeepSeek-V3 统一调用层（失败时由业务层降级 Mock）"""
 from __future__ import annotations
 
 import json

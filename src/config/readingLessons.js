@@ -1,3 +1,4 @@
+/** 阅读二级选题：Passage → Lesson（映射 zyz 阅读题库 examId） */
 export const READING_PASSAGES = [
   {
     id: 'P1',

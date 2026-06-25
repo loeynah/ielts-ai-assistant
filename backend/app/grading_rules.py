@@ -1,3 +1,4 @@
+"""雅思官方对齐的硬性判分规则 — 后端强制熔断，不依赖 LLM 自觉"""
 from __future__ import annotations
 
 import re
@@ -18,6 +19,7 @@ def objective_is_correct(user: str, correct: str) -> bool:
 
 
 def is_simple_speech(transcript: str) -> bool:
+    """启发式：重复率高、词长过短、句型单一"""
     words = re.findall(r"[A-Za-z']+", (transcript or "").lower())
     if len(words) < 30:
         return True
@@ -39,6 +41,7 @@ def apply_speaking_penalties(
     *,
     overall: float | None = None,
 ) -> tuple[dict, float, list[str]]:
+    """口语字数熔断 + 简单表达惩罚。返回 (sub_scores, overall, extra_advice)"""
     sub = {k: float(sub_scores.get(k, 0)) for k in ("FC", "LR", "GRA", "P")}
     extra: list[str] = []
     wc = count_words(transcript)
@@ -70,6 +73,7 @@ def apply_writing_penalties(
     sub_scores: dict,
     overall: float,
 ) -> tuple[dict, float, list[str]]:
+    """写作字数官方惩罚 + 连带 CC/GRA 低分"""
     sub = {k: float(sub_scores.get(k, 0)) for k in ("TR_TA", "CC", "LR", "GRA")}
     extra: list[str] = []
     wc = count_words(essay_text)

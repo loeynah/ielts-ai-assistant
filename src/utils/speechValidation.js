@@ -1,3 +1,5 @@
+/** 口语作答有效性校验 — 禁止空录/极短录/无转写时进入批改 */
+
 const INVALID_MARKERS = ['未检测到有效语音', '无转写文本', '未作答']
 
 export function isValidTranscriptText(text, minChars = 8) {

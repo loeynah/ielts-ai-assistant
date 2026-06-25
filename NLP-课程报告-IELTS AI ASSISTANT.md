@@ -297,7 +297,7 @@ erDiagram
 ```
 ielts-ai-dashboard/
 ├── 📄 README.md                          # 部署与 API 说明
-├── 📄 NLP课程报告-IELTS-AI-Prep-Companion.md  # 本报告
+├── 📄 NLP-课程报告-IELTS AI ASSISTANT.md  # 本报告
 ├── 📁 assets/                             #  静态题库资源
 │   ├── reading-exams/                    #    6 套阅读 JS 题库
 │   ├── listening/                        #    4 套听力 HTML/PDF/音频

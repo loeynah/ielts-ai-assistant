@@ -1,3 +1,4 @@
+"""练习记录与 AI 诊断报告持久化"""
 from __future__ import annotations
 
 import json

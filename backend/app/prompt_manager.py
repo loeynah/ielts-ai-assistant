@@ -1,3 +1,4 @@
+"""全科 Prompt 管理 — DeepSeek-V3 严厉判分与结构化 JSON 约束"""
 from __future__ import annotations
 
 import json

@@ -1,5 +1,6 @@
 import { mockDailyPlan } from './resources'
 
+/** 前端 Mock 对话（后续替换为 FastAPI 流式接口） */
 export const MOCK_CHAT_INTRO =
   '你好，我是你的雅思 AI 小助手。告诉我目标分数、考试倒计时和薄弱项，我会为你做痛点分析并动态调整今日任务。'
 

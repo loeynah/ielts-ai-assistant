@@ -31,6 +31,7 @@ export async function apiFetch(path, options = {}) {
       const body = await res.json()
       if (body?.detail) message = typeof body.detail === 'string' ? body.detail : message
     } catch {
+      /* ignore */
     }
     const err = new Error(message)
     err.status = res.status

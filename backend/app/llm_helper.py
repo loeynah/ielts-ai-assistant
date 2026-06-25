@@ -1,3 +1,4 @@
+"""LLM 调用统一降级：DeepSeek 失败时回退业务 Mock"""
 from __future__ import annotations
 
 import logging

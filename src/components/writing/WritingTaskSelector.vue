@@ -15,7 +15,7 @@ const isDemo = computed(() => props.selectedId && isDemoId(props.selectedId))
 <template>
   <div class="soft-card p-4 md:p-5">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-
+      <!-- 一级选题：套题 + 独立大作文平铺同一行 -->
       <div class="flex min-w-0 flex-1 flex-wrap gap-2">
         <button
           v-for="item in WRITING_MENU_ITEMS"
@@ -34,7 +34,7 @@ const isDemo = computed(() => props.selectedId && isDemoId(props.selectedId))
         </button>
       </div>
 
-
+      <!-- 右侧统一 Task 切换 -->
       <div
         class="flex shrink-0 items-center gap-1 self-end rounded-2xl bg-white p-1 shadow-[var(--shadow-soft)] ring-1 ring-slate-100 lg:self-center"
       >

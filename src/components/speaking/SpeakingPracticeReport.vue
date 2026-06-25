@@ -42,7 +42,7 @@ const corrections = computed(() => {
       </div>
     </div>
 
-
+  <!-- 四维度进度 -->
     <div class="space-y-2">
       <div v-for="dim in dimensions" :key="dim.key">
         <div class="mb-1 flex justify-between text-xs">

@@ -1,3 +1,7 @@
+/**
+ * 口语三套演示真题（源自 5-8月口语题目.md）
+ * 每套含完整 Part 1 → Part 2 → Part 3 逻辑链
+ */
 export const SPEAKING_EXAMS = [
   {
     id: 'exam-01',
@@ -74,6 +78,7 @@ export function getSpeakingExam(id) {
   return SPEAKING_EXAMS.find((e) => e.id === id) || SPEAKING_EXAMS[0]
 }
 
+/** 计时配置（秒） */
 export const SPEAKING_TIMERS = {
   part1Answer: 30,
   part2Prep: 60,

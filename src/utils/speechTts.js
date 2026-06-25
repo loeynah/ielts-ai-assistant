@@ -43,6 +43,7 @@ export function isSpeaking() {
   return window.speechSynthesis?.speaking ?? false
 }
 
+/** 预加载语音列表（Chrome 需异步加载） */
 export function preloadVoices() {
   if (!window.speechSynthesis) return
   speechSynthesis.getVoices()
