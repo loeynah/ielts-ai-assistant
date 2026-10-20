@@ -60,8 +60,6 @@
 
 本课题《IELTS AI Prep Companion》即面向上述痛点，构建一套**前端机考模拟 + 后端 NLP 批改 + SQLite 持久化画像**的闭环系统，使学习者在本地即可体验接近「AI 考官 + AI 教研总监」的反馈强度。
 
-> **[图1-1 传统备考 vs AI 闭环备考对比示意图]**  
-> （建议插入：左侧人工批改流程时序；右侧本系统 Vue→FastAPI→LLM→SQLite 流程）
 
 ### 1.2 系统功能指标化定义与设计目标
 
@@ -145,8 +143,6 @@ flowchart LR
 因此本项目采用 **「LLM 提案 + 规则裁决」** 范式：  
 `apply_writing_penalties()` / `apply_speaking_penalties()` 在 `_sanitize_*()` 中**无条件覆盖**模型分项分；听读诊断中 `objective_is_correct()` 为唯一真理来源。这是工业级 NLP 应用区别于「纯 Chatbot Demo」的关键分界线。
 
-> **[图2-1 LLM 提案 + 规则裁决 双通道控制示意图]**  
-> （建议插入：LLM 输出箭头进入 Sanitizer，规则引擎箭头覆盖后输出）
 
 ---
 
@@ -640,7 +636,7 @@ $$\text{麦克风} \xrightarrow{\text{STT}} \text{transcript（可编辑）} \xr
 4. 页面上方「口语得分走势」卡片应出现折线；鼠标悬停某一数据点，Tooltip 显示总分、FC、LR、GRA 数值。
 5. 确认黄色 GRA 线随作答质量变化（非全程贴 0）。
 
-【图5-3 截图内容说明】
+【图5-3】
 
 图5-3 展示 ECharts 多系列折线图：图例含「总分」「流利度 FC」「词汇 LR」「语法 GRA」，X 轴为交卷日期，Y 轴为 4–9 分 band。该图证明 history_store 持久化 + 前端 subScoreFromHistory() 绑定正确，是口语 GRA Bug 修复的回归验证截图。
 
